@@ -6,7 +6,6 @@ import type {
   EngagementMetrics,
   IngestOptions,
   ItemInput,
-  JsonObject,
   MemoryStore,
   ProcessedOutcome,
   SelectedCandidate,
