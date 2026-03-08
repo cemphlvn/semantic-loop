@@ -19,12 +19,19 @@ interface SupabaseRpcNames {
   readonly applyOutcome: string;
 }
 
+/** Configuration for {@link SupabaseRpcStore}. */
 export interface SupabaseRpcStoreOptions {
+  /** Supabase project URL (e.g. `https://<ref>.supabase.co`). */
   readonly url: string;
+  /** Supabase service-role key used for authenticated RPC calls. */
   readonly serviceRoleKey: string;
+  /** Items table name. Defaults to `"semantic_items"`. */
   readonly itemsTable?: string;
+  /** Aggregates table name. Defaults to `"semantic_item_scores"`. */
   readonly aggregatesTable?: string;
+  /** Override default RPC function names. */
   readonly rpc?: Partial<SupabaseRpcNames>;
+  /** Custom fetch implementation for testing or edge runtimes. */
   readonly fetcher?: typeof fetch;
 }
 
@@ -63,6 +70,7 @@ interface RpcAggregateRow {
   readonly updated_at: string;
 }
 
+/** {@link MemoryStore} backed by Supabase PostgREST RPC calls and pgvector similarity search. */
 export class SupabaseRpcStore implements MemoryStore {
   readonly #url: string;
   readonly #serviceRoleKey: string;
@@ -145,10 +153,13 @@ export class SupabaseRpcStore implements MemoryStore {
       limit: "1",
     });
 
-    const response = await this.#fetcher(`${this.#url}/rest/v1/${this.#itemsTable}?${query.toString()}`, {
-      headers: this.#headers(),
-      method: "GET",
-    });
+    const response = await this.#fetcher(
+      `${this.#url}/rest/v1/${this.#itemsTable}?${query.toString()}`,
+      {
+        headers: this.#headers(),
+        method: "GET",
+      },
+    );
 
     if (!response.ok) {
       throw new Error(`Supabase item fetch failed: ${response.status}`);
@@ -185,15 +196,19 @@ export class SupabaseRpcStore implements MemoryStore {
 
   public async getAggregate(itemId: string): Promise<AggregateState | null> {
     const query = new URLSearchParams({
-      select: "item_id,attempts,score_sum,score_avg,critic_avg,engagement_avg,last_score,last_critic_score,last_engagement_score,last_outcome_at,updated_at",
+      select:
+        "item_id,attempts,score_sum,score_avg,critic_avg,engagement_avg,last_score,last_critic_score,last_engagement_score,last_outcome_at,updated_at",
       item_id: `eq.${itemId}`,
       limit: "1",
     });
 
-    const response = await this.#fetcher(`${this.#url}/rest/v1/${this.#aggregatesTable}?${query.toString()}`, {
-      headers: this.#headers(),
-      method: "GET",
-    });
+    const response = await this.#fetcher(
+      `${this.#url}/rest/v1/${this.#aggregatesTable}?${query.toString()}`,
+      {
+        headers: this.#headers(),
+        method: "GET",
+      },
+    );
 
     if (!response.ok) {
       throw new Error(`Supabase aggregate fetch failed: ${response.status}`);
@@ -208,7 +223,11 @@ export class SupabaseRpcStore implements MemoryStore {
     return this.#toAggregate(row);
   }
 
-  public async appendOutcome(outcome: OutcomeSignal, critic: CriticResult, finalScore: number): Promise<void> {
+  public async appendOutcome(
+    outcome: OutcomeSignal,
+    critic: CriticResult,
+    finalScore: number,
+  ): Promise<void> {
     await this.#rpcPost<void>(this.#rpc.recordOutcome, {
       p_item_id: outcome.itemId,
       p_event_id: outcome.id,
@@ -225,7 +244,10 @@ export class SupabaseRpcStore implements MemoryStore {
     });
   }
 
-  public async updateAggregate(update: AggregateUpdate, config: AggregationConfig): Promise<AggregateState> {
+  public async updateAggregate(
+    update: AggregateUpdate,
+    config: AggregationConfig,
+  ): Promise<AggregateState> {
     const result = await this.#rpcPost<readonly RpcAggregateRow[]>(this.#rpc.applyOutcome, {
       p_item_id: update.itemId,
       p_occurred_at: update.occurredAt,

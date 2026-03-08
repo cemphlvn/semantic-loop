@@ -1,5 +1,6 @@
 import type { EmbeddingProvider, EmbeddingVector } from "./types.ts";
 
+/** Embedding provider that returns empty vectors. Useful for testing or when embeddings are precomputed. */
 export class NoopEmbedding implements EmbeddingProvider {
   readonly dimensions = 0;
 
@@ -8,6 +9,7 @@ export class NoopEmbedding implements EmbeddingProvider {
   }
 }
 
+/** Configuration options for the OpenAI embedding provider. */
 export interface OpenAIEmbeddingOptions {
   readonly apiKey: string;
   readonly model?: string;
@@ -15,6 +17,7 @@ export interface OpenAIEmbeddingOptions {
   readonly baseUrl?: string;
 }
 
+/** Embedding provider that calls the OpenAI embeddings API. Supports single and batch embedding. */
 export class OpenAIEmbedding implements EmbeddingProvider {
   readonly dimensions: number;
   readonly #apiKey: string;

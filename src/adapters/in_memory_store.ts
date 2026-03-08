@@ -9,18 +9,25 @@ import type {
   RetrieveRequest,
   SemanticItem,
 } from "../types.ts";
-import { defaultAggregate, cosineSimilarity, clamp } from "../utils.ts";
+import { clamp, cosineSimilarity, defaultAggregate } from "../utils.ts";
 
+/** In-memory implementation of {@link MemoryStore} backed by plain Maps. Useful for testing and prototyping. */
 export class InMemoryStore implements MemoryStore {
   readonly #items: Map<string, SemanticItem>;
   readonly #aggregates: Map<string, AggregateState>;
-  readonly #outcomes: Map<string, { outcome: OutcomeSignal; critic: CriticResult; finalScore: number }>;
+  readonly #outcomes: Map<
+    string,
+    { outcome: OutcomeSignal; critic: CriticResult; finalScore: number }
+  >;
   readonly #now: () => Date;
 
   public constructor(now?: () => Date) {
     this.#items = new Map<string, SemanticItem>();
     this.#aggregates = new Map<string, AggregateState>();
-    this.#outcomes = new Map<string, { outcome: OutcomeSignal; critic: CriticResult; finalScore: number }>();
+    this.#outcomes = new Map<
+      string,
+      { outcome: OutcomeSignal; critic: CriticResult; finalScore: number }
+    >();
     this.#now = now ?? (() => new Date());
   }
 
@@ -47,8 +54,11 @@ export class InMemoryStore implements MemoryStore {
         continue;
       }
 
-      const aggregate = this.#aggregates.get(item.id) ?? defaultAggregate(item.id, this.#now().toISOString());
-      const similarity = request.queryVector ? cosineSimilarity(item.embedding, request.queryVector) : 0.5;
+      const aggregate = this.#aggregates.get(item.id) ??
+        defaultAggregate(item.id, this.#now().toISOString());
+      const similarity = request.queryVector
+        ? cosineSimilarity(item.embedding, request.queryVector)
+        : 0.5;
       if (similarity < minSimilarity) {
         continue;
       }
@@ -74,19 +84,28 @@ export class InMemoryStore implements MemoryStore {
     return this.#aggregates.get(itemId) ?? null;
   }
 
-  public async appendOutcome(outcome: OutcomeSignal, critic: CriticResult, finalScore: number): Promise<void> {
+  public async appendOutcome(
+    outcome: OutcomeSignal,
+    critic: CriticResult,
+    finalScore: number,
+  ): Promise<void> {
     this.#outcomes.set(outcome.id, { outcome, critic, finalScore });
   }
 
-  public async updateAggregate(update: AggregateUpdate, config: AggregationConfig): Promise<AggregateState> {
-    const existing = this.#aggregates.get(update.itemId) ?? defaultAggregate(update.itemId, this.#now().toISOString());
+  public async updateAggregate(
+    update: AggregateUpdate,
+    config: AggregationConfig,
+  ): Promise<AggregateState> {
+    const existing = this.#aggregates.get(update.itemId) ??
+      defaultAggregate(update.itemId, this.#now().toISOString());
     const attempts = existing.attempts + 1;
     const decayedScoreSum = existing.scoreSum * clamp(config.decayFactor, 0, 1);
     const scoreSum = decayedScoreSum + update.finalScore;
     const scoreAvg = attempts > 0 ? scoreSum / attempts : 0;
 
     const criticAvg = ((existing.criticAvg * existing.attempts) + update.criticScore) / attempts;
-    const engagementAvg = ((existing.engagementAvg * existing.attempts) + update.engagementScore) / attempts;
+    const engagementAvg = ((existing.engagementAvg * existing.attempts) + update.engagementScore) /
+      attempts;
 
     const next: AggregateState = {
       itemId: update.itemId,

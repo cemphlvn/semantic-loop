@@ -1,11 +1,15 @@
 import type { Critic, CriticInput, CriticResult } from "../types.ts";
 import { clamp } from "../utils.ts";
 
+/** Configuration for {@link HeuristicCritic}. */
 export interface HeuristicCriticOptions {
+  /** Keywords that boost the score when found in content (e.g. "why", "framework"). */
   readonly noveltyKeywords?: readonly string[];
+  /** Keywords that penalise the score when found in content (e.g. "guaranteed", "viral"). */
   readonly penaltyKeywords?: readonly string[];
 }
 
+/** Keyword-based {@link Critic} that scores content using novelty/penalty keyword matching and engagement signals. */
 export class HeuristicCritic implements Critic {
   readonly #noveltyKeywords: readonly string[];
   readonly #penaltyKeywords: readonly string[];
@@ -30,8 +34,10 @@ export class HeuristicCritic implements Critic {
 
   public async score(input: CriticInput): Promise<CriticResult> {
     const normalized = input.item.content.toLowerCase();
-    const noveltyHits = this.#noveltyKeywords.filter((keyword: string) => normalized.includes(keyword)).length;
-    const penaltyHits = this.#penaltyKeywords.filter((keyword: string) => normalized.includes(keyword)).length;
+    const noveltyHits =
+      this.#noveltyKeywords.filter((keyword: string) => normalized.includes(keyword)).length;
+    const penaltyHits =
+      this.#penaltyKeywords.filter((keyword: string) => normalized.includes(keyword)).length;
 
     const engagementBoost = input.outcome.engagementScore * 0.6;
     const noveltyBoost = Math.min(0.25, noveltyHits * 0.06);

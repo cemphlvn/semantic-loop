@@ -5,10 +5,12 @@ import type {
   SelectionConfig,
 } from "./types.ts";
 
+/** Clamp a numeric value to the given range (default `[0, 1]`). */
 export function clamp(value: number, min = 0, max = 1): number {
   return Math.max(min, Math.min(max, value));
 }
 
+/** Compute cosine similarity between two embedding vectors, normalized to `[0, 1]`. */
 export function cosineSimilarity(a: EmbeddingVector, b: EmbeddingVector): number {
   if (a.length === 0 || b.length === 0 || a.length !== b.length) {
     return 0;
@@ -33,6 +35,7 @@ export function cosineSimilarity(a: EmbeddingVector, b: EmbeddingVector): number
   return clamp((dot / Math.sqrt(aNorm * bNorm) + 1) / 2, 0, 1);
 }
 
+/** Create a zero-valued {@link AggregateState} for a new item. */
 export function defaultAggregate(itemId: string, nowIso: string): AggregateState {
   return {
     itemId,
@@ -45,6 +48,7 @@ export function defaultAggregate(itemId: string, nowIso: string): AggregateState
   };
 }
 
+/** Derive a `[0, 1]` engagement score from raw metrics (interaction rate + watch signal). */
 export function deriveEngagementScore(metrics: EngagementMetrics): number {
   const views = metrics.views ?? metrics.impressions ?? 0;
   const likes = metrics.likes ?? 0;
@@ -63,6 +67,7 @@ export function deriveEngagementScore(metrics: EngagementMetrics): number {
   return clamp(interactionRate * 0.7 + watchSignal * 0.3, 0, 1);
 }
 
+/** Return the number of hours elapsed between an ISO date string and `now`. Returns `Infinity` if the date is unparseable. */
 export function hoursSince(isoDate: string, now: Date): number {
   const then = Date.parse(isoDate);
   if (Number.isNaN(then)) {
@@ -71,7 +76,12 @@ export function hoursSince(isoDate: string, now: Date): number {
   return Math.max(0, now.getTime() - then) / 3_600_000;
 }
 
-export function freshnessScore(aggregate: AggregateState, config: SelectionConfig, now: Date): number {
+/** Exponential-decay freshness score (`[0, 1]`) based on time since last outcome. */
+export function freshnessScore(
+  aggregate: AggregateState,
+  config: SelectionConfig,
+  now: Date,
+): number {
   const pivot = aggregate.lastOutcomeAt ?? aggregate.updatedAt;
   const elapsedHours = hoursSince(pivot, now);
   if (!Number.isFinite(elapsedHours)) {
@@ -83,6 +93,7 @@ export function freshnessScore(aggregate: AggregateState, config: SelectionConfi
   return clamp(score, 0, 1);
 }
 
+/** Exploration bonus (`[0, 1]`): `1 / (attempts + 1)`, favoring less-tested items. */
 export function explorationScore(attempts: number): number {
   return clamp(1 / Math.max(1, attempts + 1), 0, 1);
 }

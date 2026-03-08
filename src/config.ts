@@ -27,6 +27,7 @@ import { NoopEmbedding, OpenAIEmbedding } from "./embedding.ts";
 // Config types — declarative, serializable, composable
 // ---------------------------------------------------------------------------
 
+/** Declarative store configuration. Pass a string shorthand, an explicit config object, or a pre-built {@link MemoryStore} instance. */
 export type StoreConfig =
   | "supabase"
   | "memory"
@@ -38,6 +39,7 @@ export type StoreConfig =
   | { readonly provider: "memory" }
   | MemoryStore;
 
+/** Declarative embedding configuration. Pass a string shorthand, an explicit config object, or a pre-built {@link EmbeddingProvider} instance. */
 export type EmbeddingConfig =
   | "openai"
   | {
@@ -49,6 +51,7 @@ export type EmbeddingConfig =
   }
   | EmbeddingProvider;
 
+/** Declarative critic configuration. Pass a string shorthand, an explicit config object, or a pre-built {@link Critic} instance. */
 export type CriticConfig =
   | "heuristic"
   | {
@@ -58,6 +61,7 @@ export type CriticConfig =
   }
   | Critic;
 
+/** Complete declarative definition for creating a semantic loop. All fields except `store` are optional with sensible defaults. */
 export interface LoopDefinition {
   readonly store: StoreConfig;
   readonly embedding?: EmbeddingConfig;
@@ -71,6 +75,7 @@ export interface LoopDefinition {
 // SemanticLoop — the high-level API
 // ---------------------------------------------------------------------------
 
+/** High-level API for the retrieve-publish-observe-critique-update loop. Wraps the engine with embedding and convenience methods. */
 export interface SemanticLoop {
   seed(items: readonly ItemInput[]): Promise<readonly SemanticItem[]>;
   select(query?: string, opts?: SelectOptions): Promise<SelectedCandidate>;
@@ -193,6 +198,7 @@ function buildItem(input: ItemInput, embedding: EmbeddingVector): SemanticItem {
 // Factory
 // ---------------------------------------------------------------------------
 
+/** Create a fully wired {@link SemanticLoop} from a declarative {@link LoopDefinition}. Resolves store, embedding, and critic configs into concrete instances. */
 export function createLoop(definition: LoopDefinition): SemanticLoop {
   const store = resolveStore(definition.store);
   const embedder = resolveEmbedding(definition.embedding);

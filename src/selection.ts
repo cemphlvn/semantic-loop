@@ -1,10 +1,7 @@
-import type {
-  Candidate,
-  SelectedCandidate,
-  SelectionConfig,
-} from "./types.ts";
+import type { Candidate, SelectedCandidate, SelectionConfig } from "./types.ts";
 import { clamp, explorationScore, freshnessScore } from "./utils.ts";
 
+/** Default selection config: epsilon 0.18, top-k 3, freshness half-life 168h. */
 export const DEFAULT_SELECTION_CONFIG: SelectionConfig = {
   epsilon: 0.18,
   topKExplorationPool: 3,
@@ -17,11 +14,14 @@ export const DEFAULT_SELECTION_CONFIG: SelectionConfig = {
   },
 };
 
+/** Merge a partial selection config with defaults, filling in missing fields. */
 export function mergeSelectionConfig(config?: Partial<SelectionConfig>): SelectionConfig {
   return {
     epsilon: config?.epsilon ?? DEFAULT_SELECTION_CONFIG.epsilon,
-    topKExplorationPool: config?.topKExplorationPool ?? DEFAULT_SELECTION_CONFIG.topKExplorationPool,
-    freshnessHalfLifeHours: config?.freshnessHalfLifeHours ?? DEFAULT_SELECTION_CONFIG.freshnessHalfLifeHours,
+    topKExplorationPool: config?.topKExplorationPool ??
+      DEFAULT_SELECTION_CONFIG.topKExplorationPool,
+    freshnessHalfLifeHours: config?.freshnessHalfLifeHours ??
+      DEFAULT_SELECTION_CONFIG.freshnessHalfLifeHours,
     weights: {
       similarity: config?.weights?.similarity ?? DEFAULT_SELECTION_CONFIG.weights.similarity,
       scoreAvg: config?.weights?.scoreAvg ?? DEFAULT_SELECTION_CONFIG.weights.scoreAvg,
@@ -31,6 +31,7 @@ export function mergeSelectionConfig(config?: Partial<SelectionConfig>): Selecti
   };
 }
 
+/** Compute a candidate's weighted score across similarity, scoreAvg, exploration, and freshness. */
 export function computeWeightedScore(
   candidate: Candidate,
   config: SelectionConfig,
@@ -50,6 +51,10 @@ export function computeWeightedScore(
   );
 }
 
+/**
+ * Select the best candidate using epsilon-greedy strategy.
+ * Returns `null` when the candidate list is empty.
+ */
 export function selectCandidate(
   candidates: readonly Candidate[],
   config: SelectionConfig,

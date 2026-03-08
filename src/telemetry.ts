@@ -10,6 +10,7 @@ class NoopSpan implements SpanLike {
   }
 }
 
+/** Zero-overhead telemetry implementation that discards all spans. */
 export class NoopTelemetry implements Telemetry {
   public startSpan(_name: string): SpanLike {
     return new NoopSpan();

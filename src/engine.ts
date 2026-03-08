@@ -14,17 +14,23 @@ import type {
 } from "./types.ts";
 import { clamp, defaultAggregate } from "./utils.ts";
 
+/** Default aggregation config: 60% critic, 40% engagement, 0.95 decay. */
 export const DEFAULT_AGGREGATION_CONFIG: AggregationConfig = {
   criticWeight: 0.6,
   engagementWeight: 0.4,
   decayFactor: 0.95,
 };
 
+/** Default loop config combining selection and aggregation defaults. */
 export const DEFAULT_LOOP_CONFIG: LoopConfig = {
   selection: DEFAULT_SELECTION_CONFIG,
   aggregation: DEFAULT_AGGREGATION_CONFIG,
 };
 
+/**
+ * Orchestrates the retrieve-publish-observe-critique-update loop.
+ * Stateless per request; all durable state lives in the configured store.
+ */
 export class SemanticLoopEngine {
   readonly #store: EngineOptions["store"];
   readonly #critic: EngineOptions["critic"];
@@ -52,6 +58,7 @@ export class SemanticLoopEngine {
     this.#now = options.now ?? (() => new Date());
   }
 
+  /** Upsert one or more items into the store, validating each before writing. */
   public async seed(items: readonly SemanticItem[]): Promise<void> {
     const span = this.#telemetry.startSpan("semantic_loop.seed");
     span.setAttribute("items.count", items.length);
@@ -66,6 +73,7 @@ export class SemanticLoopEngine {
     }
   }
 
+  /** Retrieve candidates from the store and select the best one via epsilon-greedy. */
   public async selectNext(request: SelectRequest): Promise<SelectedCandidate> {
     const span = this.#telemetry.startSpan("semantic_loop.select_next");
     span.setAttribute("tribe", request.tribe ?? "*");
@@ -100,6 +108,7 @@ export class SemanticLoopEngine {
     }
   }
 
+  /** Score an outcome via the critic, record it, and update the item's aggregate. */
   public async ingestOutcome(outcome: OutcomeSignal): Promise<ProcessedOutcome> {
     const span = this.#telemetry.startSpan("semantic_loop.ingest_outcome");
     span.setAttribute("item.id", outcome.itemId);

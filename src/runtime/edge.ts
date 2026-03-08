@@ -2,6 +2,7 @@ import type { JsonValue } from "../types.ts";
 
 const encoder = new TextEncoder();
 
+/** Input for HMAC signature verification. */
 export interface HmacVerificationInput {
   readonly body: string;
   readonly signature: string;
@@ -9,6 +10,7 @@ export interface HmacVerificationInput {
   readonly algorithm?: "SHA-256" | "SHA-384" | "SHA-512";
 }
 
+/** Verify an HMAC signature against a request body using `crypto.subtle`. Uses timing-safe comparison to prevent timing attacks. */
 export async function verifyHmacSignature(input: HmacVerificationInput): Promise<boolean> {
   const key = await crypto.subtle.importKey(
     "raw",
@@ -27,10 +29,12 @@ export async function verifyHmacSignature(input: HmacVerificationInput): Promise
   return timingSafeEqual(expected, normalizedSignature);
 }
 
+/** Parse the request body as JSON and cast to the given type. */
 export async function readJson<T>(request: Request): Promise<T> {
   return await request.json() as T;
 }
 
+/** Create a JSON {@link Response} with the given data, status code, and optional headers. */
 export function json(data: JsonValue, status = 200, headers?: HeadersInit): Response {
   return new Response(JSON.stringify(data), {
     status,
@@ -41,16 +45,19 @@ export function json(data: JsonValue, status = 200, headers?: HeadersInit): Resp
   });
 }
 
+/** Return a 405 Method Not Allowed JSON response listing the allowed methods. */
 export function methodNotAllowed(methods: readonly string[]): Response {
   return json({ error: `Method not allowed. Allowed: ${methods.join(", ")}` }, 405);
 }
 
+/** Convert a byte array to a lowercase hex string. */
 export function toHex(bytes: Uint8Array): string {
   return Array.from(bytes)
     .map((byte: number) => byte.toString(16).padStart(2, "0"))
     .join("");
 }
 
+/** Constant-time string comparison to prevent timing attacks. Returns `false` immediately if lengths differ. */
 export function timingSafeEqual(left: string, right: string): boolean {
   if (left.length !== right.length) {
     return false;
