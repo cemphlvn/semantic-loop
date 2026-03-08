@@ -1,15 +1,17 @@
 # semantic-loop
 
-> Typed orchestration for self-improving retrieval systems. Deno-first, edge-safe, web-standard APIs only. Three methods: seed, selectNext, ingestOutcome. Every cycle compounds intelligence.
+> Typed orchestration for self-improving retrieval systems. Deno-first, edge-safe, web-standard APIs only. `createLoop()` is the recommended entry point: three methods (seed, select, ingest). Every cycle compounds intelligence.
 
 ## Instructions
 
+- **Use `createLoop()` as the primary entry point.** It wires stores, embeddings, critics, and tuning from a single declarative config.
 - All scores are clamped to [0, 1]. Never pass unbounded numbers.
 - All interfaces use `readonly` fields. Never mutate state directly.
 - Import from `jsr:@semantic-loop/core` or `mod.ts`. Named exports only, no defaults.
 - The engine is stateless. All state lives in the MemoryStore (database).
-- Use `InMemoryStore` for testing, `SupabaseRpcStore` for production.
-- The `HeuristicCritic` is the public critic. `LlmCritic` and `MultiSignalCritic` are commercial (pro/).
+- Use `store: "memory"` for testing, `store: "supabase"` for production. Or pass a custom `MemoryStore` instance.
+- Use `embedding: "openai"` for production embeddings. Omit for no auto-embedding (NoopEmbedding).
+- The `HeuristicCritic` is the default critic. `LlmCritic` and `MultiSignalCritic` are commercial (pro/).
 - Web-standard APIs only: fetch, Request, Response, crypto.subtle. No Node.js APIs.
 - Engagement scores are derived from `EngagementMetrics` using `deriveEngagementScore()`.
 - Selection uses epsilon-greedy (default epsilon 0.18) with weighted scoring: similarity 0.45, scoreAvg 0.35, exploration 0.15, freshness 0.05.
@@ -26,15 +28,16 @@
 
 ## Examples
 
-- [Supabase Edge Function](https://github.com/moatkit/semantic-loop/tree/main/examples/supabase-edge): Complete webhook ingestion with HMAC verification
+- [Supabase Edge Function](https://github.com/cemphlvn/semantic-loop/tree/main/examples/supabase-edge): Complete webhook ingestion with HMAC verification
 - [Hook Optimizer scaffold](https://moatkit.dev/docs/scaffolds.html#hook-optimizer): Self-improving social media hook selector
 - [Prompt Loop scaffold](https://moatkit.dev/docs/scaffolds.html#prompt-loop): Self-improving prompt variant selector
 - [Taste Engine scaffold](https://moatkit.dev/docs/scaffolds.html#taste-engine): Personal recommendation engine
 
 ## API
 
-- [Types](https://moatkit.dev/docs/api.html#types): SemanticItem, AggregateState, Candidate, OutcomeSignal, EngagementMetrics, CriticResult, and all config interfaces
-- [Engine](https://moatkit.dev/docs/api.html#engine): SemanticLoopEngine class with seed(), selectNext(), ingestOutcome()
+- [createLoop](https://moatkit.dev/docs/api.html#createloop): `createLoop(definition: LoopDefinition): SemanticLoop` — recommended entry point. Accepts declarative config for store, embedding, critic, selection, and aggregation.
+- [Types](https://moatkit.dev/docs/api.html#types): SemanticItem, AggregateState, Candidate, OutcomeSignal, EngagementMetrics, CriticResult, ItemInput, SelectOptions, IngestOptions, EmbeddingProvider, and all config interfaces
+- [Engine](https://moatkit.dev/docs/api.html#engine): SemanticLoopEngine class with seed(), selectNext(), ingestOutcome() — lower-level API, used internally by createLoop
 - [Utils](https://moatkit.dev/docs/api.html#utils): deriveEngagementScore, cosineSimilarity, clamp, freshnessScore, explorationScore
 - [Edge Runtime](https://moatkit.dev/docs/api.html#edge): verifyHmacSignature, json, methodNotAllowed, readJson
 - [Errors](https://moatkit.dev/docs/api.html#errors): SemanticLoopError, ValidationError, NotFoundError

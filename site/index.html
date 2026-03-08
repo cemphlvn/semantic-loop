@@ -17,11 +17,12 @@
   <div class="container">
     <a href="/" class="nav-logo">moat<span>kit</span></a>
     <ul class="nav-links">
+      <li><a href="#configs">Configs</a></li>
       <li><a href="#how-it-works">How it works</a></li>
       <li><a href="#possible">What's possible</a></li>
       <li><a href="#docs">Docs</a></li>
       <li>
-        <a href="https://github.com/moatkit/semantic-loop" class="nav-github" target="_blank" rel="noopener">
+        <a href="https://github.com/cemphlvn/semantic-loop" class="nav-github" target="_blank" rel="noopener">
           <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path></svg>
           GitHub
         </a>
@@ -46,7 +47,7 @@
 
     <div class="hero-actions">
       <a href="#docs" class="btn btn-primary">Get started</a>
-      <a href="https://github.com/moatkit/semantic-loop" class="btn btn-secondary" target="_blank" rel="noopener">
+      <a href="https://github.com/cemphlvn/semantic-loop" class="btn btn-secondary" target="_blank" rel="noopener">
         <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
         View source
       </a>
@@ -58,26 +59,83 @@
         <div class="code-block-dots"><span></span><span></span><span></span></div>
         <span class="code-block-title">the entire API</span>
       </div>
-      <pre><span class="kw">const</span> engine <span class="op">=</span> <span class="kw">new</span> <span class="fn">SemanticLoopEngine</span>({ store, critic });
+      <pre><span class="kw">const</span> loop <span class="op">=</span> <span class="fn">createLoop</span>({ store: <span class="str">"supabase"</span>, embedding: <span class="str">"openai"</span> });
 
-<span class="cm">// 1. Seed content with embeddings</span>
-<span class="kw">await</span> engine.<span class="fn">seed</span>(items);
+<span class="cm">// 1. Seed content — embeddings are generated automatically</span>
+<span class="kw">await</span> loop.<span class="fn">seed</span>([{ content: <span class="str">"Your hook here"</span>, tribe: <span class="str">"founders"</span> }]);
 
 <span class="cm">// 2. Select the best item for this context</span>
-<span class="kw">const</span> { candidate, strategy } <span class="op">=</span> <span class="kw">await</span> engine.<span class="fn">selectNext</span>({
-  tribe: <span class="str">"ai-founders"</span>,
-  kind: <span class="str">"hook"</span>,
-  queryVector,
-});
+<span class="kw">const</span> pick <span class="op">=</span> <span class="kw">await</span> loop.<span class="fn">select</span>(<span class="str">"growth strategies"</span>);
 
 <span class="cm">// 3. Later: feed back what happened</span>
-<span class="kw">const</span> result <span class="op">=</span> <span class="kw">await</span> engine.<span class="fn">ingestOutcome</span>({
-  itemId: candidate.item.id,
-  platform: <span class="str">"instagram"</span>,
-  metrics: { views: <span class="num">12400</span>, shares: <span class="num">89</span>, saves: <span class="num">214</span> },
-  engagementScore: <span class="num">0.73</span>,
+<span class="kw">await</span> loop.<span class="fn">ingest</span>(pick.candidate.item.id, <span class="str">"instagram"</span>, {
+  views: <span class="num">12400</span>, likes: <span class="num">340</span>, shares: <span class="num">89</span>,
 });
-<span class="cm">// Next selectNext() is smarter. Every loop compounds.</span></pre>
+<span class="cm">// Next select() is smarter. Every loop compounds.</span></pre>
+    </div>
+  </div>
+</section>
+
+<!-- Configs -->
+<section id="configs">
+  <div class="container">
+    <p class="section-label">Configs</p>
+    <h2>One function, any setup</h2>
+    <p><code>createLoop()</code> wires stores, embeddings, critics, and tuning from a single declarative config.</p>
+
+    <div class="configs-grid">
+      <div class="config-card">
+        <h3>Minimal</h3>
+        <div class="code-block">
+          <div class="code-block-header">
+            <div class="code-block-dots"><span></span><span></span><span></span></div>
+            <span class="code-block-title">in-memory, no embeddings</span>
+          </div>
+          <pre><span class="kw">const</span> loop <span class="op">=</span> <span class="fn">createLoop</span>({
+  store: <span class="str">"memory"</span>,
+});</pre>
+        </div>
+      </div>
+
+      <div class="config-card">
+        <h3>Production</h3>
+        <div class="code-block">
+          <div class="code-block-header">
+            <div class="code-block-dots"><span></span><span></span><span></span></div>
+            <span class="code-block-title">supabase + openai embeddings</span>
+          </div>
+          <pre><span class="kw">const</span> loop <span class="op">=</span> <span class="fn">createLoop</span>({
+  store: <span class="str">"supabase"</span>,
+  embedding: <span class="str">"openai"</span>,
+});</pre>
+        </div>
+      </div>
+
+      <div class="config-card">
+        <h3>Tuned</h3>
+        <div class="code-block">
+          <div class="code-block-header">
+            <div class="code-block-dots"><span></span><span></span><span></span></div>
+            <span class="code-block-title">custom weights + decay</span>
+          </div>
+          <pre><span class="kw">const</span> loop <span class="op">=</span> <span class="fn">createLoop</span>({
+  store: <span class="str">"supabase"</span>,
+  embedding: <span class="str">"openai"</span>,
+  selection: {
+    epsilon: <span class="num">0.25</span>,
+    weights: {
+      similarity: <span class="num">0.5</span>,
+      scoreAvg: <span class="num">0.3</span>,
+      exploration: <span class="num">0.15</span>,
+      freshness: <span class="num">0.05</span>,
+    },
+  },
+  aggregation: {
+    decayFactor: <span class="num">0.9</span>,
+  },
+});</pre>
+        </div>
+      </div>
     </div>
   </div>
 </section>
@@ -184,6 +242,10 @@
         <p>Where items and scores live. Ship with <code>InMemoryStore</code> for testing, <code>SupabaseRpcStore</code> for production. Build your own.</p>
       </div>
       <div class="primitive">
+        <h3>EmbeddingProvider</h3>
+        <p>How text becomes vectors. <code>OpenAIEmbedding</code> for production, <code>NoopEmbedding</code> for testing. Single and batch embed.</p>
+      </div>
+      <div class="primitive">
         <h3>Critic</h3>
         <p>How content is judged. <code>HeuristicCritic</code> uses keywords. <code>LlmCritic</code> uses Claude or GPT as judge. Compose with <code>MultiSignalCritic</code>.</p>
       </div>
@@ -262,7 +324,7 @@
       <a href="/">moatkit</a> &mdash; AGPL-3.0
     </div>
     <ul class="footer-links">
-      <li><a href="https://github.com/moatkit/semantic-loop" target="_blank" rel="noopener">GitHub</a></li>
+      <li><a href="https://github.com/cemphlvn/semantic-loop" target="_blank" rel="noopener">GitHub</a></li>
       <li><a href="/llms.txt">llms.txt</a></li>
       <li><a href="/llms-full.txt">llms-full.txt</a></li>
       <li><a href="https://jsr.io/@semantic-loop/core" target="_blank" rel="noopener">JSR</a></li>

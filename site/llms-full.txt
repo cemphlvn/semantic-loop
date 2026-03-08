@@ -1,15 +1,17 @@
 # semantic-loop
 
-> Typed orchestration for self-improving retrieval systems. Deno-first, edge-safe, web-standard APIs only. Three methods: seed, selectNext, ingestOutcome. Every cycle compounds intelligence.
+> Typed orchestration for self-improving retrieval systems. Deno-first, edge-safe, web-standard APIs only. `createLoop()` is the recommended entry point: three methods (seed, select, ingest). Every cycle compounds intelligence.
 
 ## Instructions
 
+- **Use `createLoop()` as the primary entry point.** It wires stores, embeddings, critics, and tuning from a single declarative config. Returns a `SemanticLoop` with `seed()`, `select()`, and `ingest()`.
 - All scores are clamped to [0, 1]. Never pass unbounded numbers.
 - All interfaces use `readonly` fields. Never mutate state directly.
 - Import from `jsr:@semantic-loop/core` or `mod.ts`. Named exports only, no defaults.
 - The engine is stateless. All state lives in the MemoryStore (database).
-- Use `InMemoryStore` for testing, `SupabaseRpcStore` for production.
-- The `HeuristicCritic` is the public critic. `LlmCritic` and `MultiSignalCritic` are commercial (pro/).
+- Use `store: "memory"` for testing, `store: "supabase"` for production. Or pass a custom `MemoryStore` instance.
+- Use `embedding: "openai"` for production embeddings. Omit for no auto-embedding (NoopEmbedding).
+- The `HeuristicCritic` is the default critic. `LlmCritic` and `MultiSignalCritic` are commercial (pro/).
 - Web-standard APIs only: fetch, Request, Response, crypto.subtle. No Node.js APIs.
 - Engagement scores are derived from `EngagementMetrics` using `deriveEngagementScore()`.
 - Selection uses epsilon-greedy (default epsilon 0.18) with weighted scoring: similarity 0.45, scoreAvg 0.35, exploration 0.15, freshness 0.05.
@@ -26,111 +28,69 @@
 
 ```typescript
 // Deno
-import { SemanticLoopEngine, InMemoryStore, HeuristicCritic } from "jsr:@semantic-loop/core";
+import { createLoop } from "jsr:@semantic-loop/core";
 ```
 
-### Basic usage
+### Basic usage (recommended: createLoop)
 
 ```typescript
-import {
-  SemanticLoopEngine,
-  InMemoryStore,
-  HeuristicCritic,
-  deriveEngagementScore,
-} from "jsr:@semantic-loop/core";
+import { createLoop } from "jsr:@semantic-loop/core";
 
-// 1. Set up engine
-const store = new InMemoryStore();
-const critic = new HeuristicCritic();
-const engine = new SemanticLoopEngine({ store, critic });
+// 1. Create the loop — wires store, embeddings, critic from config
+const loop = createLoop({ store: "memory" });
 
-// 2. Seed items (content with embeddings)
-await engine.seed([
+// 2. Seed items (embeddings generated automatically if embedding provider configured)
+await loop.seed([
   {
-    id: "hook-1",
+    content: "The hidden moat nobody talks about: compounding feedback loops",
     tribe: "ai-founders",
     kind: "hook",
-    content: "The hidden moat nobody talks about: compounding feedback loops",
-    embedding: [0.1, 0.2, 0.3, /* ... 1536 dimensions */],
-    metadata: { tone: "provocative" },
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
   },
   // ... more items
 ]);
 
 // 3. Select the best item for this context
-const selected = await engine.selectNext({
-  tribe: "ai-founders",
-  kind: "hook",
-  queryVector: [0.15, 0.22, 0.28, /* ... */],
-});
+const pick = await loop.select("growth strategies", { tribe: "ai-founders" });
 
-console.log(selected.candidate.item.content);  // The winning hook
-console.log(selected.strategy);                 // "greedy" or "explore"
-console.log(selected.weightedScore);            // 0.0 to 1.0
+console.log(pick.candidate.item.content);  // The winning hook
+console.log(pick.strategy);                // "greedy" or "explore"
+console.log(pick.weightedScore);           // 0.0 to 1.0
 
 // 4. Later: feed back real-world results
-const processed = await engine.ingestOutcome({
-  id: "outcome-1",
-  itemId: selected.candidate.item.id,
-  platform: "instagram",
-  occurredAt: new Date().toISOString(),
-  metrics: {
-    views: 12400,
-    likes: 340,
-    comments: 28,
-    shares: 89,
-    saves: 214,
-  },
-  engagementScore: deriveEngagementScore({
-    views: 12400,
-    likes: 340,
-    comments: 28,
-    shares: 89,
-    saves: 214,
-  }),
+const result = await loop.ingest(pick.candidate.item.id, "instagram", {
+  views: 12400,
+  likes: 340,
+  comments: 28,
+  shares: 89,
+  saves: 214,
 });
 
-console.log(processed.finalScore);          // Combined critic + engagement
-console.log(processed.aggregate.scoreAvg);  // Running average
-console.log(processed.aggregate.attempts);  // Total selections
+console.log(result.finalScore);          // Combined critic + engagement
+console.log(result.aggregate.scoreAvg);  // Running average
+console.log(result.aggregate.attempts);  // Total selections
 ```
 
 ### Production setup (Supabase)
 
 ```typescript
-import {
-  SemanticLoopEngine,
-  SupabaseRpcStore,
-  HeuristicCritic,
-  json,
-  methodNotAllowed,
-  verifyHmacSignature,
-  deriveEngagementScore,
-} from "jsr:@semantic-loop/core";
+import { createLoop, json, methodNotAllowed, verifyHmacSignature } from "jsr:@semantic-loop/core";
 
-const store = new SupabaseRpcStore({
-  url: Deno.env.get("SUPABASE_URL") ?? "",
-  serviceRoleKey: Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
-});
-
-const engine = new SemanticLoopEngine({
-  store,
-  critic: new HeuristicCritic(),
+const loop = createLoop({
+  store: "supabase",
+  embedding: "openai",
 });
 
 Deno.serve(async (req) => {
   const url = new URL(req.url);
 
   if (url.pathname === "/select" && req.method === "POST") {
-    const { tribe, kind, queryVector } = await req.json();
-    const selected = await engine.selectNext({ tribe, kind, queryVector });
+    const { query, tribe, kind } = await req.json();
+    const pick = await loop.select(query, { tribe, kind });
     return json({
-      content: selected.candidate.item.content,
-      id: selected.candidate.item.id,
-      strategy: selected.strategy,
-      score: selected.weightedScore,
+      content: pick.candidate.item.content,
+      id: pick.candidate.item.id,
+      strategy: pick.strategy,
+      score: pick.weightedScore,
     });
   }
 
@@ -145,19 +105,16 @@ Deno.serve(async (req) => {
     }
 
     const payload = JSON.parse(body);
-    const processed = await engine.ingestOutcome({
-      id: payload.eventId,
-      itemId: payload.itemId,
-      platform: payload.platform,
-      occurredAt: payload.occurredAt,
-      metrics: payload.metrics,
-      engagementScore: deriveEngagementScore(payload.metrics),
-    });
+    const result = await loop.ingest(
+      payload.itemId,
+      payload.platform,
+      payload.metrics,
+    );
 
     return json({
       ok: true,
-      scoreAvg: processed.aggregate.scoreAvg,
-      attempts: processed.aggregate.attempts,
+      scoreAvg: result.aggregate.scoreAvg,
+      attempts: result.aggregate.attempts,
     });
   }
 
@@ -168,6 +125,64 @@ Deno.serve(async (req) => {
 ---
 
 ## Complete API Reference
+
+### createLoop (recommended entry point)
+
+```typescript
+import { createLoop } from "jsr:@semantic-loop/core";
+
+function createLoop(definition: LoopDefinition): SemanticLoop;
+
+interface LoopDefinition {
+  readonly store: StoreConfig;           // "supabase" | "memory" | { provider, ... } | MemoryStore
+  readonly embedding?: EmbeddingConfig;  // "openai" | { provider, apiKey, ... } | EmbeddingProvider
+  readonly critic?: CriticConfig;        // "heuristic" | { provider, ... } | Critic
+  readonly selection?: Partial<SelectionConfig>;
+  readonly aggregation?: Partial<AggregationConfig>;
+  readonly telemetry?: Telemetry;
+}
+
+interface SemanticLoop {
+  seed(items: readonly ItemInput[]): Promise<readonly SemanticItem[]>;
+  select(query?: string, opts?: SelectOptions): Promise<SelectedCandidate>;
+  ingest(itemId: string, platform: string, metrics: EngagementMetrics, opts?: IngestOptions): Promise<ProcessedOutcome>;
+  readonly engine: SemanticLoopEngine;
+  readonly embedder: EmbeddingProvider;
+  readonly store: MemoryStore;
+}
+
+// Simplified input — no embedding, timestamps, or ID required
+interface ItemInput {
+  readonly content: string;
+  readonly tribe?: string;     // Default: "default"
+  readonly kind?: string;      // Default: "item"
+  readonly id?: string;        // Default: crypto.randomUUID()
+  readonly metadata?: JsonObject;
+  readonly embedding?: EmbeddingVector;  // Optional: auto-generated if embedding provider configured
+}
+
+interface SelectOptions {
+  readonly tribe?: string;
+  readonly kind?: string;
+  readonly limit?: number;
+  readonly minSimilarity?: number;
+  readonly includeArchived?: boolean;
+  readonly selection?: Partial<SelectionConfig>;
+}
+
+interface IngestOptions {
+  readonly id?: string;                  // Default: crypto.randomUUID()
+  readonly occurredAt?: string;          // Default: now
+  readonly engagementScore?: number;     // Default: derived from metrics
+  readonly payload?: JsonObject;
+}
+
+interface EmbeddingProvider {
+  embed(text: string): Promise<EmbeddingVector>;
+  embedBatch?(texts: readonly string[]): Promise<readonly EmbeddingVector[]>;
+  readonly dimensions: number;
+}
+```
 
 ### Types
 
