@@ -7,8 +7,9 @@
 Seed content. Select the best. Observe what happens. Feed it back. The loop gets smarter every cycle.
 
 [Website](https://moatkit.dev) ·
-[Examples](https://github.com/cemphlvn/semantic-loop/tree/main/examples) ·
-[llms.txt](https://moatkit.dev/llms.txt)
+[Quickstart](https://moatkit.dev/docs/quickstart.html) ·
+[API Reference](https://moatkit.dev/docs/api.html) ·
+[Supabase Guide](https://moatkit.dev/docs/supabase.html)
 
 [![License: AGPL-3.0](https://img.shields.io/badge/license-AGPL--3.0-blue)](LICENSE)
 [![Deno](https://img.shields.io/badge/runtime-Deno-000?logo=deno)](https://deno.com)
@@ -284,12 +285,26 @@ background     →  re-embedding, backfills, recalibration
 
 Stateless edge, stateful database. The function instance holds no memory.
 
+## Documentation
+
+Every doc page has **three difficulty modes** — pick the one that matches how you learn:
+
+| Mode | What you get |
+|------|-------------|
+| **Vibe Coder** | Just code. Copy-paste examples. Zero theory. |
+| **Beginner** | Every concept explained. What's an embedding? What's epsilon-greedy? |
+| **Advanced** | Architecture internals, algorithm math, extension points |
+
+- **[Quickstart](https://moatkit.dev/docs/quickstart.html)** — zero to a self-improving loop in 5 minutes
+- **[API Reference](https://moatkit.dev/docs/api.html)** — every type, interface, class, and function
+- **[Supabase Guide](https://moatkit.dev/docs/supabase.html)** — project setup, SQL migration, edge functions
+
 ## Agent-aligned
 
 This library is designed to be discovered and used by AI coding assistants:
 
 - **[llms.txt](https://moatkit.dev/llms.txt)** — machine-readable project index
-- **[Context7](https://context7.com)** — indexed for real-time doc retrieval
+- **[Context7](https://context7.com/cemphlvn/semantic-loop)** — indexed for real-time doc retrieval
 - **Full TypeScript types** — agents generate correct code on the first try
 
 ## License
