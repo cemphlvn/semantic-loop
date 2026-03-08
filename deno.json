@@ -1,0 +1,25 @@
+{
+  "name": "@semantic-loop/core",
+  "version": "0.1.0",
+  "exports": {
+    ".": "./mod.ts"
+  },
+  "tasks": {
+    "check": "deno check mod.ts",
+    "test": "deno test --allow-none",
+    "fmt": "deno fmt",
+    "lint": "deno lint"
+  },
+  "lint": {
+    "rules": {
+      "tags": [
+        "recommended"
+      ]
+    }
+  },
+  "fmt": {
+    "semiColons": true,
+    "singleQuote": false,
+    "lineWidth": 100
+  }
+}

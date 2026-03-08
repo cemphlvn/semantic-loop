@@ -1,0 +1,24 @@
+# === Deno / Runtime ===
+.deno/
+deno.lock
+
+# === Editor ===
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# === OS ===
+.DS_Store
+Thumbs.db
+
+# === Environment ===
+.env
+.env.*
+!.env.example
+
+# === Claude (personal/local files only) ===
+.claude/CLAUDE.local.md
+.claude/settings.local.json
+.claude/agent-memory-local/
