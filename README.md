@@ -6,10 +6,10 @@
 
 Seed content. Select the best. Observe what happens. Feed it back. The loop gets smarter every cycle.
 
-[Website](https://moatkit.dev) ·
-[Quickstart](https://moatkit.dev/docs/quickstart.html) ·
-[API Reference](https://moatkit.dev/docs/api.html) ·
-[Supabase Guide](https://moatkit.dev/docs/supabase.html)
+[Website](https://cemphlvn.github.io/semantic-loop) ·
+[Quickstart](https://cemphlvn.github.io/semantic-loop/docs/quickstart.html) ·
+[API Reference](https://cemphlvn.github.io/semantic-loop/docs/api.html) ·
+[Supabase Guide](https://cemphlvn.github.io/semantic-loop/docs/supabase.html)
 
 [![License: AGPL-3.0](https://img.shields.io/badge/license-AGPL--3.0-blue)](LICENSE)
 [![Deno](https://img.shields.io/badge/runtime-Deno-000?logo=deno)](https://deno.com)
@@ -295,15 +295,15 @@ Every doc page has **three difficulty modes** — pick the one that matches how 
 | **Beginner** | Every concept explained. What's an embedding? What's epsilon-greedy? |
 | **Advanced** | Architecture internals, algorithm math, extension points |
 
-- **[Quickstart](https://moatkit.dev/docs/quickstart.html)** — zero to a self-improving loop in 5 minutes
-- **[API Reference](https://moatkit.dev/docs/api.html)** — every type, interface, class, and function
-- **[Supabase Guide](https://moatkit.dev/docs/supabase.html)** — project setup, SQL migration, edge functions
+- **[Quickstart](https://cemphlvn.github.io/semantic-loop/docs/quickstart.html)** — zero to a self-improving loop in 5 minutes
+- **[API Reference](https://cemphlvn.github.io/semantic-loop/docs/api.html)** — every type, interface, class, and function
+- **[Supabase Guide](https://cemphlvn.github.io/semantic-loop/docs/supabase.html)** — project setup, SQL migration, edge functions
 
 ## Agent-aligned
 
 This library is designed to be discovered and used by AI coding assistants:
 
-- **[llms.txt](https://moatkit.dev/llms.txt)** — machine-readable project index
+- **[llms.txt](https://cemphlvn.github.io/semantic-loop/llms.txt)** — machine-readable project index
 - **[Context7](https://context7.com/cemphlvn/semantic-loop)** — indexed for real-time doc retrieval
 - **Full TypeScript types** — agents generate correct code on the first try
 
