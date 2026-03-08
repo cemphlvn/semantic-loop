@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Supabase Guide &mdash; semantic-loop</title>
+  <meta name="description" content="Set up semantic-loop with Supabase. PostgreSQL schema, pgvector, RPC functions, edge functions, and HMAC webhook verification.">
+  <link rel="stylesheet" href="../global.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<!-- Nav -->
+<nav>
+  <div class="container">
+    <a href="../" class="nav-logo">moat<span>kit</span></a>
+    <ul class="nav-links">
+      <li><a href="quickstart.html">Quickstart</a></li>
+      <li><a href="api.html">API</a></li>
+      <li><a href="supabase.html" class="active">Supabase</a></li>
+      <li>
+        <a href="https://github.com/cemphlvn/semantic-loop" class="nav-github" target="_blank" rel="noopener">
+          <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path></svg>
+          GitHub
+        </a>
+      </li>
+    </ul>
+  </div>
+</nav>
+
+<!-- Level Tabs -->
+<div class="level-tabs">
+  <div class="container">
+    <button class="level-tab active" data-level="vibe">Vibe Coder<span class="level-tab-desc"> &mdash; just code</span></button>
+    <button class="level-tab" data-level="beginner">Beginner<span class="level-tab-desc"> &mdash; explain everything</span></button>
+    <button class="level-tab" data-level="advanced">Advanced<span class="level-tab-desc"> &mdash; internals &amp; tradeoffs</span></button>
+  </div>
+</div>
+
+<div class="docs-layout">
+
+  <!-- Sidebar -->
+  <aside class="docs-sidebar">
+    <div class="sidebar-heading">Supabase</div>
+    <ul>
+      <li><a href="#setup">Project setup</a></li>
+      <li><a href="#migration">SQL migration</a></li>
+      <li><a href="#env">Environment variables</a></li>
+      <li><a href="#edge-function">Edge function</a></li>
+      <li><a href="#hmac">HMAC verification</a></li>
+    </ul>
+    <div class="sidebar-heading">Pages</div>
+    <ul>
+      <li><a href="quickstart.html">Quickstart</a></li>
+      <li><a href="api.html">API Reference</a></li>
+      <li><a href="supabase.html" class="active">Supabase Guide</a></li>
+    </ul>
+  </aside>
+
+  <!-- Content -->
+  <main class="docs-content">
+
+    <div class="docs-breadcrumb">
+      <a href="../">moatkit</a>
+      <span class="sep">/</span>
+      <span>Supabase Guide</span>
+    </div>
+
+    <h1>Supabase Guide</h1>
+    <p class="lead">PostgreSQL + pgvector + edge functions. The production backend for semantic-loop.</p>
+
+    <!-- ============================================================ -->
+    <h2 id="setup">Project setup</h2>
+
+    <!-- VIBE -->
+    <div class="level-vibe">
+      <ol>
+        <li>Create a Supabase project at <a href="https://supabase.com" target="_blank" rel="noopener">supabase.com</a></li>
+        <li>Copy project URL and service role key from Settings &gt; API</li>
+        <li>Run the migration below in the SQL Editor</li>
+        <li>Set env vars and go</li>
+      </ol>
+    </div>
+
+    <!-- BEGINNER -->
+    <div class="level-beginner">
+      <h3>What is Supabase?</h3>
+      <p>Supabase is an open-source alternative to Firebase. It gives you a PostgreSQL database, a REST API, and edge functions &mdash; all hosted. The free tier is enough to run semantic-loop.</p>
+
+      <h3>Step by step</h3>
+      <ol>
+        <li>Go to <a href="https://supabase.com" target="_blank" rel="noopener">supabase.com</a> and create a free account.</li>
+        <li>Click "New project". Pick any name and region. Note the database password (you won't need it for the API, but save it).</li>
+        <li>Once the project is ready, go to <strong>Settings &gt; API</strong>.</li>
+        <li>Copy the <strong>Project URL</strong> (looks like <code>https://abcdef.supabase.co</code>).</li>
+        <li>Copy the <strong>service_role key</strong> (starts with <code>eyJ...</code>). This is a secret &mdash; never expose it in client-side code.</li>
+        <li>Go to the <strong>SQL Editor</strong> tab and run the migration from the next section.</li>
+      </ol>
+      <div class="note"><strong>Why service_role?</strong> The <code>service_role</code> key bypasses Row Level Security and can read/write all tables. semantic-loop needs this because it manages items and scores server-side. Never use the <code>anon</code> key for this.</div>
+    </div>
+
+    <!-- ADVANCED -->
+    <div class="level-advanced">
+      <p>Supabase provides PostgREST over your PostgreSQL database. The <code>SupabaseRpcStore</code> communicates exclusively via:</p>
+      <ul>
+        <li><strong>RPC calls</strong> (<code>/rest/v1/rpc/sl_*</code>) for all writes &mdash; ensures atomicity</li>
+        <li><strong>REST queries</strong> (<code>/rest/v1/semantic_items?id=eq.xyz</code>) for single-item reads</li>
+      </ul>
+      <p>The pgvector extension enables cosine similarity search directly in PostgreSQL. The <code>sl_match_items</code> RPC function handles vector comparison, filtering, and sorting in a single query.</p>
+      <p>For multi-tenant deployments, you can prefix table names and RPC functions via <code>SupabaseRpcStoreOptions</code>.</p>
+    </div>
+
+    <!-- ============================================================ -->
+    <h2 id="migration">SQL migration</h2>
+
+    <!-- VIBE -->
+    <div class="level-vibe">
+      <div class="code-block">
+        <div class="code-block-header">
+          <div class="code-block-dots"><span></span><span></span><span></span></div>
+          <span class="code-block-title">sql/001_init.sql &mdash; run in Supabase SQL Editor</span>
+        </div>
+        <pre><span class="cm">-- Enable pgvector</span>
+<span class="kw">create extension if not exists</span> vector;
+
+<span class="cm">-- Items table</span>
+<span class="kw">create table if not exists</span> public.semantic_items (
+  id <span class="ty">text</span> <span class="kw">primary key</span>,
+  tribe <span class="ty">text</span> <span class="kw">not null</span>,
+  kind <span class="ty">text</span> <span class="kw">not null</span>,
+  content <span class="ty">text</span> <span class="kw">not null</span>,
+  embedding <span class="ty">vector(<span class="num">1536</span>)</span> <span class="kw">not null</span>,
+  metadata <span class="ty">jsonb</span> <span class="kw">not null default</span> <span class="str">'{}'</span>::jsonb,
+  created_at <span class="ty">timestamptz</span> <span class="kw">not null default</span> <span class="fn">now</span>(),
+  updated_at <span class="ty">timestamptz</span> <span class="kw">not null default</span> <span class="fn">now</span>(),
+  archived_at <span class="ty">timestamptz</span>
+);
+
+<span class="cm">-- Aggregate scores</span>
+<span class="kw">create table if not exists</span> public.semantic_item_scores (
+  item_id <span class="ty">text</span> <span class="kw">primary key references</span> public.semantic_items(id) <span class="kw">on delete cascade</span>,
+  attempts <span class="ty">integer</span> <span class="kw">not null default</span> <span class="num">0</span>,
+  score_sum <span class="ty">double precision</span> <span class="kw">not null default</span> <span class="num">0</span>,
+  score_avg <span class="ty">double precision</span> <span class="kw">not null default</span> <span class="num">0</span>,
+  critic_avg <span class="ty">double precision</span> <span class="kw">not null default</span> <span class="num">0</span>,
+  engagement_avg <span class="ty">double precision</span> <span class="kw">not null default</span> <span class="num">0</span>,
+  last_score <span class="ty">double precision</span>,
+  last_critic_score <span class="ty">double precision</span>,
+  last_engagement_score <span class="ty">double precision</span>,
+  last_outcome_at <span class="ty">timestamptz</span>,
+  updated_at <span class="ty">timestamptz</span> <span class="kw">not null default</span> <span class="fn">now</span>()
+);
+
+<span class="cm">-- Outcome events</span>
+<span class="kw">create table if not exists</span> public.semantic_outcomes (
+  id <span class="ty">text</span> <span class="kw">primary key</span>,
+  item_id <span class="ty">text</span> <span class="kw">not null references</span> public.semantic_items(id) <span class="kw">on delete cascade</span>,
+  platform <span class="ty">text</span> <span class="kw">not null</span>,
+  occurred_at <span class="ty">timestamptz</span> <span class="kw">not null</span>,
+  metrics <span class="ty">jsonb</span> <span class="kw">not null default</span> <span class="str">'{}'</span>::jsonb,
+  payload <span class="ty">jsonb</span> <span class="kw">not null default</span> <span class="str">'{}'</span>::jsonb,
+  engagement_score <span class="ty">double precision</span> <span class="kw">not null</span>,
+  critic_score <span class="ty">double precision</span> <span class="kw">not null</span>,
+  final_score <span class="ty">double precision</span> <span class="kw">not null</span>,
+  rationale <span class="ty">text</span>,
+  tags <span class="ty">text[]</span> <span class="kw">not null default</span> <span class="str">'{}'</span>,
+  meta <span class="ty">jsonb</span> <span class="kw">not null default</span> <span class="str">'{}'</span>::jsonb,
+  created_at <span class="ty">timestamptz</span> <span class="kw">not null default</span> <span class="fn">now</span>()
+);
+
+<span class="cm">-- Auto-update timestamps</span>
+<span class="kw">create or replace function</span> public.<span class="fn">sl_touch_updated_at</span>()
+<span class="kw">returns</span> trigger <span class="kw">language</span> plpgsql <span class="kw">as</span> <span class="str">$$
+begin
+  new.updated_at = now();
+  return new;
+end;
+$$</span>;
+
+<span class="kw">drop trigger if exists</span> semantic_items_touch_updated_at <span class="kw">on</span> public.semantic_items;
+<span class="kw">create trigger</span> semantic_items_touch_updated_at
+<span class="kw">before update on</span> public.semantic_items
+<span class="kw">for each row execute function</span> public.<span class="fn">sl_touch_updated_at</span>();
+
+<span class="kw">drop trigger if exists</span> semantic_item_scores_touch_updated_at <span class="kw">on</span> public.semantic_item_scores;
+<span class="kw">create trigger</span> semantic_item_scores_touch_updated_at
+<span class="kw">before update on</span> public.semantic_item_scores
+<span class="kw">for each row execute function</span> public.<span class="fn">sl_touch_updated_at</span>();
+
+<span class="cm">-- Indexes</span>
+<span class="kw">create index if not exists</span> semantic_items_tribe_kind_idx <span class="kw">on</span> public.semantic_items (tribe, kind);
+<span class="kw">create index if not exists</span> semantic_outcomes_item_id_idx <span class="kw">on</span> public.semantic_outcomes (item_id, occurred_at <span class="kw">desc</span>);
+<span class="kw">create index if not exists</span> semantic_items_embedding_cos_idx
+  <span class="kw">on</span> public.semantic_items <span class="kw">using</span> ivfflat (embedding vector_cosine_ops) <span class="kw">with</span> (lists = <span class="num">100</span>);
+
+<span class="cm">-- RPC: upsert item</span>
+<span class="kw">create or replace function</span> public.<span class="fn">sl_upsert_item</span>(
+  p_id <span class="ty">text</span>, p_tribe <span class="ty">text</span>, p_kind <span class="ty">text</span>, p_content <span class="ty">text</span>,
+  p_embedding <span class="ty">double precision[]</span>,
+  p_metadata <span class="ty">jsonb</span> <span class="kw">default</span> <span class="str">'{}'</span>::jsonb,
+  p_created_at <span class="ty">timestamptz</span> <span class="kw">default</span> <span class="fn">now</span>(),
+  p_updated_at <span class="ty">timestamptz</span> <span class="kw">default</span> <span class="fn">now</span>(),
+  p_archived_at <span class="ty">timestamptz</span> <span class="kw">default null</span>
+) <span class="kw">returns void language</span> plpgsql <span class="kw">as</span> <span class="str">$$
+begin
+  insert into public.semantic_items (id, tribe, kind, content, embedding, metadata, created_at, updated_at, archived_at)
+  values (p_id, p_tribe, p_kind, p_content, p_embedding::vector, coalesce(p_metadata, '{}'::jsonb), p_created_at, p_updated_at, p_archived_at)
+  on conflict (id) do update
+  set tribe = excluded.tribe, kind = excluded.kind, content = excluded.content,
+      embedding = excluded.embedding, metadata = excluded.metadata,
+      updated_at = excluded.updated_at, archived_at = excluded.archived_at;
+
+  insert into public.semantic_item_scores (item_id) values (p_id)
+  on conflict (item_id) do nothing;
+end;
+$$</span>;
+
+<span class="cm">-- RPC: vector similarity search</span>
+<span class="kw">create or replace function</span> public.<span class="fn">sl_match_items</span>(
+  p_tribe <span class="ty">text</span> <span class="kw">default null</span>,
+  p_kind <span class="ty">text</span> <span class="kw">default null</span>,
+  p_query_embedding <span class="ty">double precision[]</span> <span class="kw">default null</span>,
+  p_limit <span class="ty">integer</span> <span class="kw">default</span> <span class="num">8</span>,
+  p_min_similarity <span class="ty">double precision</span> <span class="kw">default</span> <span class="num">0</span>,
+  p_include_archived <span class="ty">boolean</span> <span class="kw">default false</span>
+) <span class="kw">returns table</span> (
+  id <span class="ty">text</span>, tribe <span class="ty">text</span>, kind <span class="ty">text</span>, content <span class="ty">text</span>, metadata <span class="ty">jsonb</span>,
+  created_at <span class="ty">timestamptz</span>, updated_at <span class="ty">timestamptz</span>, archived_at <span class="ty">timestamptz</span>,
+  attempts <span class="ty">integer</span>, score_sum <span class="ty">double precision</span>, score_avg <span class="ty">double precision</span>,
+  critic_avg <span class="ty">double precision</span>, engagement_avg <span class="ty">double precision</span>,
+  last_score <span class="ty">double precision</span>, last_critic_score <span class="ty">double precision</span>,
+  last_engagement_score <span class="ty">double precision</span>, last_outcome_at <span class="ty">timestamptz</span>,
+  similarity <span class="ty">double precision</span>
+) <span class="kw">language sql stable as</span> <span class="str">$$
+  with ranked as (
+    select i.id, i.tribe, i.kind, i.content, i.metadata,
+           i.created_at, i.updated_at, i.archived_at,
+           coalesce(s.attempts, 0) as attempts,
+           coalesce(s.score_sum, 0) as score_sum,
+           coalesce(s.score_avg, 0) as score_avg,
+           coalesce(s.critic_avg, 0) as critic_avg,
+           coalesce(s.engagement_avg, 0) as engagement_avg,
+           s.last_score, s.last_critic_score, s.last_engagement_score, s.last_outcome_at,
+           case when p_query_embedding is null then 0.5
+                else 1 - (i.embedding <=> (p_query_embedding::vector))
+           end as similarity
+    from public.semantic_items i
+    left join public.semantic_item_scores s on s.item_id = i.id
+    where (p_tribe is null or i.tribe = p_tribe)
+      and (p_kind is null or i.kind = p_kind)
+      and (p_include_archived or i.archived_at is null)
+  )
+  select * from ranked
+  where similarity >= coalesce(p_min_similarity, 0)
+  order by similarity desc, score_avg desc, attempts asc
+  limit greatest(1, coalesce(p_limit, 8));
+$$</span>;
+
+<span class="cm">-- RPC: record outcome event</span>
+<span class="kw">create or replace function</span> public.<span class="fn">sl_record_outcome</span>(
+  p_item_id <span class="ty">text</span>, p_event_id <span class="ty">text</span>, p_platform <span class="ty">text</span>,
+  p_occurred_at <span class="ty">timestamptz</span>, p_metrics <span class="ty">jsonb</span>, p_payload <span class="ty">jsonb</span>,
+  p_engagement_score <span class="ty">double precision</span>, p_critic_score <span class="ty">double precision</span>,
+  p_final_score <span class="ty">double precision</span>,
+  p_rationale <span class="ty">text</span> <span class="kw">default null</span>,
+  p_tags <span class="ty">text[]</span> <span class="kw">default</span> <span class="str">'{}'</span>,
+  p_meta <span class="ty">jsonb</span> <span class="kw">default</span> <span class="str">'{}'</span>::jsonb
+) <span class="kw">returns void language</span> plpgsql <span class="kw">as</span> <span class="str">$$
+begin
+  insert into public.semantic_outcomes
+    (id, item_id, platform, occurred_at, metrics, payload, engagement_score,
+     critic_score, final_score, rationale, tags, meta)
+  values (p_event_id, p_item_id, p_platform, p_occurred_at,
+          coalesce(p_metrics, '{}'::jsonb), coalesce(p_payload, '{}'::jsonb),
+          p_engagement_score, p_critic_score, p_final_score,
+          p_rationale, coalesce(p_tags, '{}'), coalesce(p_meta, '{}'::jsonb))
+  on conflict (id) do nothing;
+end;
+$$</span>;
+
+<span class="cm">-- RPC: atomic aggregate update with row-level locking</span>
+<span class="kw">create or replace function</span> public.<span class="fn">sl_apply_outcome</span>(
+  p_item_id <span class="ty">text</span>, p_occurred_at <span class="ty">timestamptz</span>,
+  p_engagement_score <span class="ty">double precision</span>, p_critic_score <span class="ty">double precision</span>,
+  p_final_score <span class="ty">double precision</span>, p_decay_factor <span class="ty">double precision</span> <span class="kw">default</span> <span class="num">0.95</span>
+) <span class="kw">returns table</span> (
+  item_id <span class="ty">text</span>, attempts <span class="ty">integer</span>, score_sum <span class="ty">double precision</span>,
+  score_avg <span class="ty">double precision</span>, critic_avg <span class="ty">double precision</span>,
+  engagement_avg <span class="ty">double precision</span>, last_score <span class="ty">double precision</span>,
+  last_critic_score <span class="ty">double precision</span>, last_engagement_score <span class="ty">double precision</span>,
+  last_outcome_at <span class="ty">timestamptz</span>, updated_at <span class="ty">timestamptz</span>
+) <span class="kw">language</span> plpgsql <span class="kw">as</span> <span class="str">$$
+declare
+  v_prev public.semantic_item_scores%rowtype;
+  v_attempts integer;
+  v_score_sum double precision;
+  v_score_avg double precision;
+  v_critic_avg double precision;
+  v_engagement_avg double precision;
+begin
+  insert into public.semantic_item_scores (item_id)
+  values (p_item_id) on conflict (item_id) do nothing;
+
+  select * into v_prev from public.semantic_item_scores
+  where semantic_item_scores.item_id = p_item_id for update;
+
+  v_attempts := coalesce(v_prev.attempts, 0) + 1;
+  v_score_sum := coalesce(v_prev.score_sum, 0)
+    * greatest(0, least(1, coalesce(p_decay_factor, 0.95)))
+    + p_final_score;
+  v_score_avg := v_score_sum / greatest(1, v_attempts);
+  v_critic_avg := ((coalesce(v_prev.critic_avg, 0) * coalesce(v_prev.attempts, 0))
+    + p_critic_score) / greatest(1, v_attempts);
+  v_engagement_avg := ((coalesce(v_prev.engagement_avg, 0) * coalesce(v_prev.attempts, 0))
+    + p_engagement_score) / greatest(1, v_attempts);
+
+  update public.semantic_item_scores
+  set attempts = v_attempts,
+      score_sum = v_score_sum,
+      score_avg = greatest(0, least(1, v_score_avg)),
+      critic_avg = greatest(0, least(1, v_critic_avg)),
+      engagement_avg = greatest(0, least(1, v_engagement_avg)),
+      last_score = p_final_score,
+      last_critic_score = p_critic_score,
+      last_engagement_score = p_engagement_score,
+      last_outcome_at = p_occurred_at,
+      updated_at = now()
+  where semantic_item_scores.item_id = p_item_id;
+
+  return query select s.item_id, s.attempts, s.score_sum, s.score_avg,
+    s.critic_avg, s.engagement_avg, s.last_score, s.last_critic_score,
+    s.last_engagement_score, s.last_outcome_at, s.updated_at
+  from public.semantic_item_scores s where s.item_id = p_item_id;
+end;
+$$</span>;</pre>
+      </div>
+    </div>
+
+    <!-- BEGINNER -->
+    <div class="level-beginner">
+      <p>This migration creates everything semantic-loop needs in your Supabase database. Copy the entire block and paste it into the <strong>SQL Editor</strong> in your Supabase dashboard.</p>
+
+      <h3>What gets created</h3>
+      <table>
+        <thead><tr><th>Object</th><th>Type</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr><td><code>semantic_items</code></td><td>Table</td><td>Your content with embedding vectors.</td></tr>
+          <tr><td><code>semantic_item_scores</code></td><td>Table</td><td>Running aggregate scores per item.</td></tr>
+          <tr><td><code>semantic_outcomes</code></td><td>Table</td><td>Raw outcome events (the audit trail).</td></tr>
+          <tr><td><code>sl_upsert_item</code></td><td>Function</td><td>Insert or update an item (idempotent).</td></tr>
+          <tr><td><code>sl_match_items</code></td><td>Function</td><td>Vector similarity search with filtering.</td></tr>
+          <tr><td><code>sl_record_outcome</code></td><td>Function</td><td>Store an outcome event.</td></tr>
+          <tr><td><code>sl_apply_outcome</code></td><td>Function</td><td>Update aggregate scores atomically.</td></tr>
+        </tbody>
+      </table>
+
+      <h3>The embedding column</h3>
+      <p>The <code>embedding</code> column uses <code>vector(1536)</code> which matches OpenAI's <code>text-embedding-3-small</code> model. If you use a different model with different dimensions, change the number (e.g., <code>vector(768)</code> for some open-source models).</p>
+
+      <h3>The full SQL</h3>
+      <p>Copy and paste this into your Supabase SQL Editor:</p>
+      <div class="code-block">
+        <div class="code-block-header">
+          <div class="code-block-dots"><span></span><span></span><span></span></div>
+          <span class="code-block-title">sql/001_init.sql</span>
+        </div>
+        <pre><span class="kw">create extension if not exists</span> vector;
+
+<span class="kw">create table if not exists</span> public.semantic_items (
+  id <span class="ty">text</span> <span class="kw">primary key</span>,
+  tribe <span class="ty">text</span> <span class="kw">not null</span>,
+  kind <span class="ty">text</span> <span class="kw">not null</span>,
+  content <span class="ty">text</span> <span class="kw">not null</span>,
+  embedding <span class="ty">vector(<span class="num">1536</span>)</span> <span class="kw">not null</span>,
+  metadata <span class="ty">jsonb</span> <span class="kw">not null default</span> <span class="str">'{}'</span>::jsonb,
+  created_at <span class="ty">timestamptz</span> <span class="kw">not null default</span> <span class="fn">now</span>(),
+  updated_at <span class="ty">timestamptz</span> <span class="kw">not null default</span> <span class="fn">now</span>(),
+  archived_at <span class="ty">timestamptz</span>
+);
+
+<span class="kw">create table if not exists</span> public.semantic_item_scores (
+  item_id <span class="ty">text</span> <span class="kw">primary key references</span> public.semantic_items(id) <span class="kw">on delete cascade</span>,
+  attempts <span class="ty">integer</span> <span class="kw">not null default</span> <span class="num">0</span>,
+  score_sum <span class="ty">double precision</span> <span class="kw">not null default</span> <span class="num">0</span>,
+  score_avg <span class="ty">double precision</span> <span class="kw">not null default</span> <span class="num">0</span>,
+  critic_avg <span class="ty">double precision</span> <span class="kw">not null default</span> <span class="num">0</span>,
+  engagement_avg <span class="ty">double precision</span> <span class="kw">not null default</span> <span class="num">0</span>,
+  last_score <span class="ty">double precision</span>,
+  last_critic_score <span class="ty">double precision</span>,
+  last_engagement_score <span class="ty">double precision</span>,
+  last_outcome_at <span class="ty">timestamptz</span>,
+  updated_at <span class="ty">timestamptz</span> <span class="kw">not null default</span> <span class="fn">now</span>()
+);
+
+<span class="kw">create table if not exists</span> public.semantic_outcomes (
+  id <span class="ty">text</span> <span class="kw">primary key</span>,
+  item_id <span class="ty">text</span> <span class="kw">not null references</span> public.semantic_items(id) <span class="kw">on delete cascade</span>,
+  platform <span class="ty">text</span> <span class="kw">not null</span>,
+  occurred_at <span class="ty">timestamptz</span> <span class="kw">not null</span>,
+  metrics <span class="ty">jsonb</span> <span class="kw">not null default</span> <span class="str">'{}'</span>::jsonb,
+  payload <span class="ty">jsonb</span> <span class="kw">not null default</span> <span class="str">'{}'</span>::jsonb,
+  engagement_score <span class="ty">double precision</span> <span class="kw">not null</span>,
+  critic_score <span class="ty">double precision</span> <span class="kw">not null</span>,
+  final_score <span class="ty">double precision</span> <span class="kw">not null</span>,
+  rationale <span class="ty">text</span>,
+  tags <span class="ty">text[]</span> <span class="kw">not null default</span> <span class="str">'{}'</span>,
+  meta <span class="ty">jsonb</span> <span class="kw">not null default</span> <span class="str">'{}'</span>::jsonb,
+  created_at <span class="ty">timestamptz</span> <span class="kw">not null default</span> <span class="fn">now</span>()
+);</pre>
+      </div>
+      <p>Then run the functions and triggers (copy the full migration from the Vibe Coder tab for the complete SQL).</p>
+    </div>
+
+    <!-- ADVANCED -->
+    <div class="level-advanced">
+      <h3>Schema design decisions</h3>
+      <ul>
+        <li><strong>Text primary keys</strong> &mdash; UUIDs as text for portability across runtimes. No serial IDs.</li>
+        <li><strong>Separate scores table</strong> &mdash; Avoids bloating the items table with frequently-updated aggregate columns. The scores table is write-heavy, items table is read-heavy.</li>
+        <li><strong>Outcome append-only</strong> &mdash; <code>semantic_outcomes</code> is an audit log. Outcomes are never updated or deleted. The <code>on conflict do nothing</code> ensures idempotent replays.</li>
+        <li><strong>IVFFlat index</strong> &mdash; <code>lists = 100</code> is a reasonable default for up to ~100k items. For larger datasets, increase lists or consider HNSW: <code>using hnsw (embedding vector_cosine_ops)</code>.</li>
+        <li><strong>Row-level locking</strong> &mdash; <code>sl_apply_outcome</code> uses <code>SELECT ... FOR UPDATE</code> to prevent race conditions when concurrent edge function invocations update the same item's scores.</li>
+      </ul>
+
+      <h3>sl_match_items internals</h3>
+      <p>The function uses <code>1 - (embedding &lt;=&gt; query::vector)</code> for cosine distance-to-similarity conversion. The <code>&lt;=&gt;</code> operator returns cosine distance (0 = identical, 2 = opposite), so <code>1 - distance</code> maps to [-1, 1] similarity. When no query vector is provided, similarity defaults to 0.5.</p>
+      <p>Sorting order: similarity desc, score_avg desc, attempts asc. This ensures that among equally-similar items, proven performers rank higher, and among those, less-tested items get priority.</p>
+
+      <h3>sl_apply_outcome atomicity</h3>
+      <p>The decay-weighted update is performed in a single transaction with row-level locking:</p>
+      <ol>
+        <li>Ensure the scores row exists (<code>INSERT ... ON CONFLICT DO NOTHING</code>)</li>
+        <li>Lock the row (<code>SELECT ... FOR UPDATE</code>)</li>
+        <li>Compute new values with decay</li>
+        <li>Update in place</li>
+        <li>Return the updated row</li>
+      </ol>
+      <p>This prevents lost updates when multiple webhooks fire simultaneously for the same item.</p>
+    </div>
+
+    <!-- ============================================================ -->
+    <h2 id="env">Environment variables</h2>
+
+    <!-- VIBE -->
+    <div class="level-vibe">
+      <div class="code-block">
+        <div class="code-block-header">
+          <div class="code-block-dots"><span></span><span></span><span></span></div>
+          <span class="code-block-title">.env</span>
+        </div>
+        <pre>SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=eyJ...
+OPENAI_API_KEY=sk-...  <span class="cm"># optional</span></pre>
+      </div>
+    </div>
+
+    <!-- BEGINNER -->
+    <div class="level-beginner">
+      <p>Create a <code>.env</code> file in your project root with these values from your Supabase dashboard:</p>
+      <div class="code-block">
+        <div class="code-block-header">
+          <div class="code-block-dots"><span></span><span></span><span></span></div>
+          <span class="code-block-title">.env</span>
+        </div>
+        <pre>SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=eyJ...
+OPENAI_API_KEY=sk-...  <span class="cm"># only if using embedding: "openai"</span></pre>
+      </div>
+      <p>Deno reads <code>.env</code> files automatically with <code>--env</code> flag or when deployed to Deno Deploy / Supabase Edge Functions (set via dashboard).</p>
+      <div class="note"><strong>Security:</strong> The <code>service_role</code> key has full database access. Never commit it to version control. Add <code>.env</code> to your <code>.gitignore</code>.</div>
+    </div>
+
+    <!-- ADVANCED -->
+    <div class="level-advanced">
+      <p>The string shorthands (<code>"supabase"</code>, <code>"openai"</code>) call <code>Deno.env.get()</code> internally. On Supabase Edge Functions, <code>SUPABASE_URL</code> and <code>SUPABASE_SERVICE_ROLE_KEY</code> are automatically available without any configuration.</p>
+      <p>For explicit config (no env dependency):</p>
+      <div class="code-block">
+        <div class="code-block-header">
+          <div class="code-block-dots"><span></span><span></span><span></span></div>
+          <span class="code-block-title">no env vars needed</span>
+        </div>
+        <pre><span class="kw">const</span> loop <span class="op">=</span> <span class="fn">createLoop</span>({
+  store: {
+    provider: <span class="str">"supabase"</span>,
+    url: <span class="str">"https://your-project.supabase.co"</span>,
+    serviceRoleKey: <span class="str">"eyJ..."</span>,
+  },
+  embedding: {
+    provider: <span class="str">"openai"</span>,
+    apiKey: <span class="str">"sk-..."</span>,
+  },
+});</pre>
+      </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <h2 id="edge-function">Edge function pattern</h2>
+
+    <!-- VIBE -->
+    <div class="level-vibe">
+      <div class="code-block">
+        <div class="code-block-header">
+          <div class="code-block-dots"><span></span><span></span><span></span></div>
+          <span class="code-block-title">supabase/functions/ingest/index.ts</span>
+        </div>
+        <pre><span class="kw">import</span> { createLoop } <span class="kw">from</span> <span class="str">"@semantic-loop/core"</span>;
+<span class="kw">import</span> { verifyHmacSignature, readJson, json, methodNotAllowed } <span class="kw">from</span> <span class="str">"@semantic-loop/core/runtime/edge"</span>;
+
+<span class="kw">const</span> loop <span class="op">=</span> <span class="fn">createLoop</span>({ store: <span class="str">"supabase"</span>, embedding: <span class="str">"openai"</span> });
+
+Deno.<span class="fn">serve</span>(<span class="kw">async</span> (req) <span class="op">=&gt;</span> {
+  <span class="kw">if</span> (req.method <span class="op">!==</span> <span class="str">"POST"</span>) <span class="kw">return</span> <span class="fn">methodNotAllowed</span>([<span class="str">"POST"</span>]);
+
+  <span class="kw">const</span> body <span class="op">=</span> <span class="kw">await</span> req.<span class="fn">text</span>();
+  <span class="kw">const</span> sig <span class="op">=</span> req.headers.<span class="fn">get</span>(<span class="str">"x-webhook-signature"</span>) <span class="op">??</span> <span class="str">""</span>;
+  <span class="kw">const</span> valid <span class="op">=</span> <span class="kw">await</span> <span class="fn">verifyHmacSignature</span>({
+    body, signature: sig, secret: Deno.env.<span class="fn">get</span>(<span class="str">"WEBHOOK_SECRET"</span>)<span class="op">!</span>,
+  });
+  <span class="kw">if</span> (<span class="op">!</span>valid) <span class="kw">return</span> <span class="fn">json</span>({ error: <span class="str">"invalid signature"</span> }, <span class="num">401</span>);
+
+  <span class="kw">const</span> { itemId, platform, metrics } <span class="op">=</span> JSON.<span class="fn">parse</span>(body);
+  <span class="kw">const</span> result <span class="op">=</span> <span class="kw">await</span> loop.<span class="fn">ingest</span>(itemId, platform, metrics);
+
+  <span class="kw">return</span> <span class="fn">json</span>({ finalScore: result.finalScore, tags: result.critic.tags });
+});</pre>
+      </div>
+    </div>
+
+    <!-- BEGINNER -->
+    <div class="level-beginner">
+      <p>An edge function is a serverless function that runs close to your users. Supabase Edge Functions run on Deno Deploy. Here's the pattern for receiving webhook events and feeding them into the loop:</p>
+
+      <div class="code-block">
+        <div class="code-block-header">
+          <div class="code-block-dots"><span></span><span></span><span></span></div>
+          <span class="code-block-title">supabase/functions/ingest/index.ts</span>
+        </div>
+        <pre><span class="kw">import</span> { createLoop } <span class="kw">from</span> <span class="str">"@semantic-loop/core"</span>;
+<span class="kw">import</span> { verifyHmacSignature, readJson, json, methodNotAllowed } <span class="kw">from</span> <span class="str">"@semantic-loop/core/runtime/edge"</span>;
+
+<span class="cm">// Create the loop once — it's reused across requests</span>
+<span class="kw">const</span> loop <span class="op">=</span> <span class="fn">createLoop</span>({ store: <span class="str">"supabase"</span>, embedding: <span class="str">"openai"</span> });
+
+<span class="cm">// Handle incoming webhooks</span>
+Deno.<span class="fn">serve</span>(<span class="kw">async</span> (req) <span class="op">=&gt;</span> {
+  <span class="cm">// Only accept POST</span>
+  <span class="kw">if</span> (req.method <span class="op">!==</span> <span class="str">"POST"</span>) <span class="kw">return</span> <span class="fn">methodNotAllowed</span>([<span class="str">"POST"</span>]);
+
+  <span class="cm">// Verify the webhook signature</span>
+  <span class="kw">const</span> body <span class="op">=</span> <span class="kw">await</span> req.<span class="fn">text</span>();
+  <span class="kw">const</span> sig <span class="op">=</span> req.headers.<span class="fn">get</span>(<span class="str">"x-webhook-signature"</span>) <span class="op">??</span> <span class="str">""</span>;
+  <span class="kw">const</span> valid <span class="op">=</span> <span class="kw">await</span> <span class="fn">verifyHmacSignature</span>({
+    body,
+    signature: sig,
+    secret: Deno.env.<span class="fn">get</span>(<span class="str">"WEBHOOK_SECRET"</span>)<span class="op">!</span>,
+  });
+  <span class="kw">if</span> (<span class="op">!</span>valid) <span class="kw">return</span> <span class="fn">json</span>({ error: <span class="str">"invalid signature"</span> }, <span class="num">401</span>);
+
+  <span class="cm">// Parse the webhook payload and ingest</span>
+  <span class="kw">const</span> { itemId, platform, metrics } <span class="op">=</span> JSON.<span class="fn">parse</span>(body);
+  <span class="kw">const</span> result <span class="op">=</span> <span class="kw">await</span> loop.<span class="fn">ingest</span>(itemId, platform, metrics);
+
+  <span class="cm">// Return fast</span>
+  <span class="kw">return</span> <span class="fn">json</span>({ finalScore: result.finalScore, tags: result.critic.tags });
+});</pre>
+      </div>
+
+      <p>The pattern is: verify the webhook, ingest the outcome, return fast. The loop and database handle everything else.</p>
+
+      <h3>How to deploy</h3>
+      <ol>
+        <li>Install the Supabase CLI: <code>npm install -g supabase</code></li>
+        <li>Create the function: <code>supabase functions new ingest</code></li>
+        <li>Paste the code into <code>supabase/functions/ingest/index.ts</code></li>
+        <li>Set secrets: <code>supabase secrets set WEBHOOK_SECRET=your-secret OPENAI_API_KEY=sk-...</code></li>
+        <li>Deploy: <code>supabase functions deploy ingest</code></li>
+      </ol>
+    </div>
+
+    <!-- ADVANCED -->
+    <div class="level-advanced">
+      <p>Architecture pattern: stateless edge, stateful database.</p>
+      <div class="code-block">
+        <div class="code-block-header">
+          <div class="code-block-dots"><span></span><span></span><span></span></div>
+          <span class="code-block-title">deployment topology</span>
+        </div>
+        <pre><span class="cm">// Request flow:</span>
+<span class="cm">// platform webhook → edge function → verify → ingest → database → response</span>
+<span class="cm">//</span>
+<span class="cm">// The edge function holds no state. The loop instance is created</span>
+<span class="cm">// at module scope for connection reuse, but it's stateless —</span>
+<span class="cm">// all durable state is in PostgreSQL.</span>
+<span class="cm">//</span>
+<span class="cm">// For high-throughput scenarios:</span>
+<span class="cm">// - sl_apply_outcome uses FOR UPDATE locking — safe for concurrent writes</span>
+<span class="cm">// - sl_record_outcome uses ON CONFLICT DO NOTHING — safe for replays</span>
+<span class="cm">// - The only bottleneck is pgvector indexing during batch upserts</span></pre>
+      </div>
+      <p>For a select endpoint (e.g., returning the best content for an API call):</p>
+      <div class="code-block">
+        <div class="code-block-header">
+          <div class="code-block-dots"><span></span><span></span><span></span></div>
+          <span class="code-block-title">supabase/functions/select/index.ts</span>
+        </div>
+        <pre><span class="kw">import</span> { createLoop } <span class="kw">from</span> <span class="str">"@semantic-loop/core"</span>;
+<span class="kw">import</span> { readJson, json, methodNotAllowed } <span class="kw">from</span> <span class="str">"@semantic-loop/core/runtime/edge"</span>;
+
+<span class="kw">const</span> loop <span class="op">=</span> <span class="fn">createLoop</span>({ store: <span class="str">"supabase"</span>, embedding: <span class="str">"openai"</span> });
+
+Deno.<span class="fn">serve</span>(<span class="kw">async</span> (req) <span class="op">=&gt;</span> {
+  <span class="kw">if</span> (req.method <span class="op">!==</span> <span class="str">"POST"</span>) <span class="kw">return</span> <span class="fn">methodNotAllowed</span>([<span class="str">"POST"</span>]);
+
+  <span class="kw">const</span> { query, tribe, kind } <span class="op">=</span> <span class="kw">await</span> <span class="fn">readJson</span>&lt;{
+    query?: <span class="ty">string</span>;
+    tribe?: <span class="ty">string</span>;
+    kind?: <span class="ty">string</span>;
+  }&gt;(req);
+
+  <span class="kw">const</span> pick <span class="op">=</span> <span class="kw">await</span> loop.<span class="fn">select</span>(query, { tribe, kind });
+
+  <span class="kw">return</span> <span class="fn">json</span>({
+    content: pick.candidate.item.content,
+    id: pick.candidate.item.id,
+    strategy: pick.strategy,
+    score: pick.weightedScore,
+  });
+});</pre>
+      </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <h2 id="hmac">HMAC webhook verification</h2>
+
+    <!-- VIBE -->
+    <div class="level-vibe">
+      <div class="code-block">
+        <div class="code-block-header">
+          <div class="code-block-dots"><span></span><span></span><span></span></div>
+          <span class="code-block-title">verify a webhook</span>
+        </div>
+        <pre><span class="kw">import</span> { verifyHmacSignature } <span class="kw">from</span> <span class="str">"@semantic-loop/core/runtime/edge"</span>;
+
+<span class="kw">const</span> valid <span class="op">=</span> <span class="kw">await</span> <span class="fn">verifyHmacSignature</span>({
+  body: rawBodyString,
+  signature: req.headers.<span class="fn">get</span>(<span class="str">"x-webhook-signature"</span>) <span class="op">??</span> <span class="str">""</span>,
+  secret: Deno.env.<span class="fn">get</span>(<span class="str">"WEBHOOK_SECRET"</span>)<span class="op">!</span>,
+  algorithm: <span class="str">"SHA-256"</span>,  <span class="cm">// default, also supports SHA-384, SHA-512</span>
+});</pre>
+      </div>
+    </div>
+
+    <!-- BEGINNER -->
+    <div class="level-beginner">
+      <p>When a platform sends you a webhook (e.g., Instagram notifying you about post engagement), you need to verify it's actually from them and not a malicious request.</p>
+      <p>HMAC verification works like this:</p>
+      <ol>
+        <li>You and the platform share a secret key.</li>
+        <li>The platform signs the webhook body with the secret using HMAC-SHA256.</li>
+        <li>They send the signature in a header (e.g., <code>x-webhook-signature</code>).</li>
+        <li>You compute the same signature and compare. If they match, the request is authentic.</li>
+      </ol>
+      <div class="code-block">
+        <div class="code-block-header">
+          <div class="code-block-dots"><span></span><span></span><span></span></div>
+          <span class="code-block-title">usage</span>
+        </div>
+        <pre><span class="kw">import</span> { verifyHmacSignature } <span class="kw">from</span> <span class="str">"@semantic-loop/core/runtime/edge"</span>;
+
+<span class="kw">const</span> body <span class="op">=</span> <span class="kw">await</span> req.<span class="fn">text</span>();
+<span class="kw">const</span> signature <span class="op">=</span> req.headers.<span class="fn">get</span>(<span class="str">"x-webhook-signature"</span>) <span class="op">??</span> <span class="str">""</span>;
+
+<span class="kw">const</span> valid <span class="op">=</span> <span class="kw">await</span> <span class="fn">verifyHmacSignature</span>({
+  body,            <span class="cm">// the raw request body as a string</span>
+  signature,       <span class="cm">// the signature from the header</span>
+  secret: <span class="str">"your-shared-secret"</span>,
+});
+
+<span class="kw">if</span> (<span class="op">!</span>valid) {
+  <span class="kw">return new</span> <span class="fn">Response</span>(<span class="str">"Unauthorized"</span>, { status: <span class="num">401</span> });
+}</pre>
+      </div>
+    </div>
+
+    <!-- ADVANCED -->
+    <div class="level-advanced">
+      <p>The implementation uses <code>crypto.subtle</code> (Web Crypto API) for HMAC computation. Key details:</p>
+      <ul>
+        <li>Supports SHA-256 (default), SHA-384, and SHA-512</li>
+        <li>Uses <strong>timing-safe comparison</strong> &mdash; constant-time string equality to prevent timing attacks</li>
+        <li>Automatically strips <code>sha256=</code> prefix from signatures (GitHub-style)</li>
+        <li>Signature is normalized to lowercase hex before comparison</li>
+      </ul>
+      <div class="code-block">
+        <div class="code-block-header">
+          <div class="code-block-dots"><span></span><span></span><span></span></div>
+          <span class="code-block-title">edge runtime helpers</span>
+        </div>
+        <pre><span class="cm">// All exported from "@semantic-loop/core/runtime/edge"</span>
+
+<span class="fn">verifyHmacSignature</span>(input: <span class="ty">HmacVerificationInput</span>): <span class="ty">Promise</span>&lt;<span class="ty">boolean</span>&gt;
+<span class="fn">readJson</span>&lt;T&gt;(request: <span class="ty">Request</span>): <span class="ty">Promise</span>&lt;T&gt;
+<span class="fn">json</span>(data: <span class="ty">JsonValue</span>, status?: <span class="ty">number</span>, headers?: <span class="ty">HeadersInit</span>): <span class="ty">Response</span>
+<span class="fn">methodNotAllowed</span>(methods: <span class="kw">readonly</span> <span class="ty">string</span>[]): <span class="ty">Response</span>
+<span class="fn">toHex</span>(bytes: <span class="ty">Uint8Array</span>): <span class="ty">string</span>
+<span class="fn">timingSafeEqual</span>(left: <span class="ty">string</span>, right: <span class="ty">string</span>): <span class="ty">boolean</span></pre>
+      </div>
+      <p>The <code>timingSafeEqual</code> function uses XOR comparison and returns false early only on length mismatch (length itself is not secret). For same-length strings, it always iterates the full length.</p>
+      <div class="note"><strong>Note:</strong> <code>readJson()</code> is a typed wrapper around <code>request.json()</code>. <code>json()</code> creates a <code>Response</code> with JSON content type. <code>methodNotAllowed()</code> returns a 405 with the allowed methods listed.</div>
+    </div>
+
+  </main>
+</div>
+
+<!-- Footer -->
+<footer>
+  <div class="container">
+    <div class="footer-left">
+      <a href="../">moatkit</a> &mdash; AGPL-3.0
+    </div>
+    <ul class="footer-links">
+      <li><a href="https://github.com/cemphlvn/semantic-loop" target="_blank" rel="noopener">GitHub</a></li>
+      <li><a href="../llms.txt">llms.txt</a></li>
+      <li><a href="../llms-full.txt">llms-full.txt</a></li>
+      <li><a href="https://jsr.io/@semantic-loop/core" target="_blank" rel="noopener">JSR</a></li>
+    </ul>
+  </div>
+</footer>
+
+<script>
+(function () {
+  var STORAGE_KEY = "sl-doc-level";
+  var tabs = document.querySelectorAll(".level-tab");
+  var body = document.body;
+  var saved = localStorage.getItem(STORAGE_KEY) || "vibe";
+
+  function setLevel(level) {
+    body.className = body.className.replace(/\bshow-\w+\b/g, "").replace(/\blevel-active\b/g, "").trim();
+    body.classList.add("level-active", "show-" + level);
+    tabs.forEach(function (t) {
+      t.classList.toggle("active", t.getAttribute("data-level") === level);
+    });
+    try { localStorage.setItem(STORAGE_KEY, level); } catch (e) {}
+  }
+
+  tabs.forEach(function (tab) {
+    tab.addEventListener("click", function () {
+      setLevel(this.getAttribute("data-level"));
+    });
+  });
+
+  setLevel(saved);
+})();
+</script>
+
+</body>
+</html>

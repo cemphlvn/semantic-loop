@@ -1,0 +1,1062 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>API Reference &mdash; semantic-loop</title>
+  <meta name="description" content="Complete API reference for semantic-loop. Every type, interface, class, and function with full signatures.">
+  <link rel="stylesheet" href="../global.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<!-- Nav -->
+<nav>
+  <div class="container">
+    <a href="../" class="nav-logo">moat<span>kit</span></a>
+    <ul class="nav-links">
+      <li><a href="quickstart.html">Quickstart</a></li>
+      <li><a href="api.html" class="active">API</a></li>
+      <li><a href="supabase.html">Supabase</a></li>
+      <li>
+        <a href="https://github.com/cemphlvn/semantic-loop" class="nav-github" target="_blank" rel="noopener">
+          <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path></svg>
+          GitHub
+        </a>
+      </li>
+    </ul>
+  </div>
+</nav>
+
+<!-- Level Tabs -->
+<div class="level-tabs">
+  <div class="container">
+    <button class="level-tab active" data-level="vibe">Vibe Coder<span class="level-tab-desc"> &mdash; just code</span></button>
+    <button class="level-tab" data-level="beginner">Beginner<span class="level-tab-desc"> &mdash; explain everything</span></button>
+    <button class="level-tab" data-level="advanced">Advanced<span class="level-tab-desc"> &mdash; internals &amp; tradeoffs</span></button>
+  </div>
+</div>
+
+<div class="docs-layout">
+
+  <!-- Sidebar -->
+  <aside class="docs-sidebar">
+    <div class="sidebar-heading">High-Level API</div>
+    <ul>
+      <li><a href="#createLoop">createLoop()</a></li>
+      <li><a href="#SemanticLoop">SemanticLoop</a></li>
+      <li><a href="#LoopDefinition">LoopDefinition</a></li>
+    </ul>
+    <div class="sidebar-heading">Engine</div>
+    <ul>
+      <li><a href="#SemanticLoopEngine">SemanticLoopEngine</a></li>
+    </ul>
+    <div class="sidebar-heading">Core Types</div>
+    <ul>
+      <li><a href="#SemanticItem">SemanticItem</a></li>
+      <li><a href="#ItemInput">ItemInput</a></li>
+      <li><a href="#Candidate">Candidate</a></li>
+      <li><a href="#SelectedCandidate">SelectedCandidate</a></li>
+      <li><a href="#AggregateState">AggregateState</a></li>
+      <li><a href="#OutcomeSignal">OutcomeSignal</a></li>
+      <li><a href="#EngagementMetrics">EngagementMetrics</a></li>
+      <li><a href="#ProcessedOutcome">ProcessedOutcome</a></li>
+    </ul>
+    <div class="sidebar-heading">Config Types</div>
+    <ul>
+      <li><a href="#SelectionConfig">SelectionConfig</a></li>
+      <li><a href="#AggregationConfig">AggregationConfig</a></li>
+      <li><a href="#SelectOptions">SelectOptions</a></li>
+      <li><a href="#IngestOptions">IngestOptions</a></li>
+    </ul>
+    <div class="sidebar-heading">Interfaces</div>
+    <ul>
+      <li><a href="#MemoryStore">MemoryStore</a></li>
+      <li><a href="#Critic">Critic</a></li>
+      <li><a href="#EmbeddingProvider">EmbeddingProvider</a></li>
+      <li><a href="#Telemetry">Telemetry</a></li>
+    </ul>
+    <div class="sidebar-heading">Implementations</div>
+    <ul>
+      <li><a href="#InMemoryStore">InMemoryStore</a></li>
+      <li><a href="#SupabaseRpcStore">SupabaseRpcStore</a></li>
+      <li><a href="#HeuristicCritic">HeuristicCritic</a></li>
+      <li><a href="#OpenAIEmbedding">OpenAIEmbedding</a></li>
+    </ul>
+    <div class="sidebar-heading">Pages</div>
+    <ul>
+      <li><a href="quickstart.html">Quickstart</a></li>
+      <li><a href="api.html" class="active">API Reference</a></li>
+      <li><a href="supabase.html">Supabase Guide</a></li>
+    </ul>
+  </aside>
+
+  <!-- Content -->
+  <main class="docs-content">
+
+    <div class="docs-breadcrumb">
+      <a href="../">moatkit</a>
+      <span class="sep">/</span>
+      <span>API Reference</span>
+    </div>
+
+    <h1>API Reference</h1>
+    <p class="lead">Every type, interface, class, and function in semantic-loop.</p>
+
+    <!-- ============================================================ -->
+    <!-- HIGH-LEVEL API -->
+    <!-- ============================================================ -->
+
+    <h2 id="createLoop">createLoop()</h2>
+
+    <!-- VIBE -->
+    <div class="level-vibe">
+      <div class="code-block">
+        <div class="code-block-header">
+          <div class="code-block-dots"><span></span><span></span><span></span></div>
+          <span class="code-block-title">signature</span>
+        </div>
+        <pre><span class="kw">function</span> <span class="fn">createLoop</span>(definition: <span class="ty">LoopDefinition</span>): <span class="ty">SemanticLoop</span></pre>
+      </div>
+      <div class="code-block">
+        <div class="code-block-header">
+          <div class="code-block-dots"><span></span><span></span><span></span></div>
+          <span class="code-block-title">examples</span>
+        </div>
+        <pre><span class="fn">createLoop</span>({ store: <span class="str">"memory"</span> })
+<span class="fn">createLoop</span>({ store: <span class="str">"supabase"</span>, embedding: <span class="str">"openai"</span> })
+<span class="fn">createLoop</span>({ store: <span class="str">"supabase"</span>, embedding: <span class="str">"openai"</span>, critic: <span class="str">"heuristic"</span> })
+<span class="fn">createLoop</span>({ store: <span class="str">"supabase"</span>, selection: { epsilon: <span class="num">0.25</span> }, aggregation: { decayFactor: <span class="num">0.9</span> } })</pre>
+      </div>
+    </div>
+
+    <!-- BEGINNER -->
+    <div class="level-beginner">
+      <p>The main entry point. Wires together a store, embedding provider, critic, and configuration into a ready-to-use loop.</p>
+      <div class="code-block">
+        <div class="code-block-header">
+          <div class="code-block-dots"><span></span><span></span><span></span></div>
+          <span class="code-block-title">signature</span>
+        </div>
+        <pre><span class="kw">function</span> <span class="fn">createLoop</span>(definition: <span class="ty">LoopDefinition</span>): <span class="ty">SemanticLoop</span></pre>
+      </div>
+      <p>The <code>definition</code> object tells the loop which backend to use for storage, how to generate embeddings, and how to tune the selection and aggregation algorithms. Most fields have sensible defaults.</p>
+      <p>Returns a <code>SemanticLoop</code> with three main methods: <code>seed()</code>, <code>select()</code>, and <code>ingest()</code>.</p>
+    </div>
+
+    <!-- ADVANCED -->
+    <div class="level-advanced">
+      <div class="code-block">
+        <div class="code-block-header">
+          <div class="code-block-dots"><span></span><span></span><span></span></div>
+          <span class="code-block-title">signature</span>
+        </div>
+        <pre><span class="kw">function</span> <span class="fn">createLoop</span>(definition: <span class="ty">LoopDefinition</span>): <span class="ty">SemanticLoop</span></pre>
+      </div>
+      <p>Factory function that resolves declarative config into wired instances. Config slots accept three forms:</p>
+      <ul>
+        <li><strong>String shorthand</strong> &mdash; e.g., <code>"supabase"</code>, <code>"openai"</code>, <code>"heuristic"</code>. Reads env vars.</li>
+        <li><strong>Config object</strong> &mdash; e.g., <code>{ provider: "supabase", url: "...", serviceRoleKey: "..." }</code>. Explicit values.</li>
+        <li><strong>Raw instance</strong> &mdash; any object implementing the interface (<code>MemoryStore</code>, <code>EmbeddingProvider</code>, <code>Critic</code>). Escape hatch for custom backends.</li>
+      </ul>
+      <p>Resolution is checked via duck-typing: <code>isMemoryStore()</code> checks for <code>"upsertItem" in value</code>, <code>isEmbeddingProvider()</code> checks for <code>"embed" in value &amp;&amp; "dimensions" in value</code>.</p>
+    </div>
+
+    <!-- ============================================================ -->
+    <h2 id="SemanticLoop">SemanticLoop</h2>
+
+    <!-- VIBE -->
+    <div class="level-vibe">
+      <div class="code-block">
+        <div class="code-block-header">
+          <div class="code-block-dots"><span></span><span></span><span></span></div>
+          <span class="code-block-title">interface</span>
+        </div>
+        <pre><span class="kw">interface</span> <span class="ty">SemanticLoop</span> {
+  <span class="fn">seed</span>(items: <span class="kw">readonly</span> <span class="ty">ItemInput</span>[]): <span class="ty">Promise</span>&lt;<span class="kw">readonly</span> <span class="ty">SemanticItem</span>[]&gt;;
+  <span class="fn">select</span>(query?: <span class="ty">string</span>, opts?: <span class="ty">SelectOptions</span>): <span class="ty">Promise</span>&lt;<span class="ty">SelectedCandidate</span>&gt;;
+  <span class="fn">ingest</span>(itemId: <span class="ty">string</span>, platform: <span class="ty">string</span>, metrics: <span class="ty">EngagementMetrics</span>, opts?: <span class="ty">IngestOptions</span>): <span class="ty">Promise</span>&lt;<span class="ty">ProcessedOutcome</span>&gt;;
+  <span class="kw">readonly</span> engine: <span class="ty">SemanticLoopEngine</span>;
+  <span class="kw">readonly</span> embedder: <span class="ty">EmbeddingProvider</span>;
+  <span class="kw">readonly</span> store: <span class="ty">MemoryStore</span>;
+}</pre>
+      </div>
+    </div>
+
+    <!-- BEGINNER -->
+    <div class="level-beginner">
+      <p>The object returned by <code>createLoop()</code>. Three methods are all you need:</p>
+      <table>
+        <thead><tr><th>Method</th><th>What it does</th></tr></thead>
+        <tbody>
+          <tr><td><code>seed(items)</code></td><td>Add content to the loop. Auto-generates IDs, timestamps, and embeddings.</td></tr>
+          <tr><td><code>select(query?, opts?)</code></td><td>Pick the best item. The query string is embedded and used for similarity search.</td></tr>
+          <tr><td><code>ingest(itemId, platform, metrics, opts?)</code></td><td>Record what happened when you used an item. Engagement is derived automatically.</td></tr>
+        </tbody>
+      </table>
+      <p>You also get direct access to <code>loop.engine</code>, <code>loop.embedder</code>, and <code>loop.store</code> if you need lower-level control.</p>
+      <div class="code-block">
+        <div class="code-block-header">
+          <div class="code-block-dots"><span></span><span></span><span></span></div>
+          <span class="code-block-title">interface</span>
+        </div>
+        <pre><span class="kw">interface</span> <span class="ty">SemanticLoop</span> {
+  <span class="fn">seed</span>(items: <span class="kw">readonly</span> <span class="ty">ItemInput</span>[]): <span class="ty">Promise</span>&lt;<span class="kw">readonly</span> <span class="ty">SemanticItem</span>[]&gt;;
+  <span class="fn">select</span>(query?: <span class="ty">string</span>, opts?: <span class="ty">SelectOptions</span>): <span class="ty">Promise</span>&lt;<span class="ty">SelectedCandidate</span>&gt;;
+  <span class="fn">ingest</span>(itemId: <span class="ty">string</span>, platform: <span class="ty">string</span>, metrics: <span class="ty">EngagementMetrics</span>, opts?: <span class="ty">IngestOptions</span>): <span class="ty">Promise</span>&lt;<span class="ty">ProcessedOutcome</span>&gt;;
+  <span class="kw">readonly</span> engine: <span class="ty">SemanticLoopEngine</span>;
+  <span class="kw">readonly</span> embedder: <span class="ty">EmbeddingProvider</span>;
+  <span class="kw">readonly</span> store: <span class="ty">MemoryStore</span>;
+}</pre>
+      </div>
+    </div>
+
+    <!-- ADVANCED -->
+    <div class="level-advanced">
+      <div class="code-block">
+        <div class="code-block-header">
+          <div class="code-block-dots"><span></span><span></span><span></span></div>
+          <span class="code-block-title">interface</span>
+        </div>
+        <pre><span class="kw">interface</span> <span class="ty">SemanticLoop</span> {
+  <span class="fn">seed</span>(items: <span class="kw">readonly</span> <span class="ty">ItemInput</span>[]): <span class="ty">Promise</span>&lt;<span class="kw">readonly</span> <span class="ty">SemanticItem</span>[]&gt;;
+  <span class="fn">select</span>(query?: <span class="ty">string</span>, opts?: <span class="ty">SelectOptions</span>): <span class="ty">Promise</span>&lt;<span class="ty">SelectedCandidate</span>&gt;;
+  <span class="fn">ingest</span>(itemId: <span class="ty">string</span>, platform: <span class="ty">string</span>, metrics: <span class="ty">EngagementMetrics</span>, opts?: <span class="ty">IngestOptions</span>): <span class="ty">Promise</span>&lt;<span class="ty">ProcessedOutcome</span>&gt;;
+  <span class="kw">readonly</span> engine: <span class="ty">SemanticLoopEngine</span>;
+  <span class="kw">readonly</span> embedder: <span class="ty">EmbeddingProvider</span>;
+  <span class="kw">readonly</span> store: <span class="ty">MemoryStore</span>;
+}</pre>
+      </div>
+      <p><code>seed()</code> uses <code>embedder.embedBatch()</code> when available (reducing API calls), then falls back to individual <code>embed()</code> calls. Items that already have an <code>embedding</code> field skip embedding generation.</p>
+      <p><code>select()</code> embeds the query only when the embedder has <code>dimensions &gt; 0</code>. Otherwise <code>queryVector</code> is <code>undefined</code> and the store defaults to a fixed similarity value.</p>
+      <p><code>ingest()</code> calls <code>deriveEngagementScore(metrics)</code> unless an explicit <code>engagementScore</code> is provided via <code>IngestOptions</code>.</p>
+    </div>
+
+    <!-- ============================================================ -->
+    <h2 id="LoopDefinition">LoopDefinition</h2>
+
+    <!-- VIBE -->
+    <div class="level-vibe">
+      <div class="code-block">
+        <div class="code-block-header">
+          <div class="code-block-dots"><span></span><span></span><span></span></div>
+          <span class="code-block-title">type</span>
+        </div>
+        <pre><span class="kw">interface</span> <span class="ty">LoopDefinition</span> {
+  <span class="kw">readonly</span> store: <span class="str">"supabase"</span> <span class="op">|</span> <span class="str">"memory"</span> <span class="op">|</span> { provider: <span class="str">"supabase"</span>, url: <span class="ty">string</span>, serviceRoleKey: <span class="ty">string</span> } <span class="op">|</span> { provider: <span class="str">"memory"</span> } <span class="op">|</span> <span class="ty">MemoryStore</span>;
+  <span class="kw">readonly</span> embedding?: <span class="str">"openai"</span> <span class="op">|</span> { provider: <span class="str">"openai"</span>, apiKey: <span class="ty">string</span>, model?: <span class="ty">string</span>, dimensions?: <span class="ty">number</span>, baseUrl?: <span class="ty">string</span> } <span class="op">|</span> <span class="ty">EmbeddingProvider</span>;
+  <span class="kw">readonly</span> critic?: <span class="str">"heuristic"</span> <span class="op">|</span> { provider: <span class="str">"heuristic"</span>, noveltyKeywords?: <span class="ty">string</span>[], penaltyKeywords?: <span class="ty">string</span>[] } <span class="op">|</span> <span class="ty">Critic</span>;
+  <span class="kw">readonly</span> selection?: <span class="ty">Partial</span>&lt;<span class="ty">SelectionConfig</span>&gt;;
+  <span class="kw">readonly</span> aggregation?: <span class="ty">Partial</span>&lt;<span class="ty">AggregationConfig</span>&gt;;
+  <span class="kw">readonly</span> telemetry?: <span class="ty">Telemetry</span>;
+}</pre>
+      </div>
+    </div>
+
+    <!-- BEGINNER -->
+    <div class="level-beginner">
+      <p>The configuration object passed to <code>createLoop()</code>. Only <code>store</code> is required.</p>
+      <table>
+        <thead><tr><th>Field</th><th>Required</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>store</code></td><td>Yes</td><td>Where items live. <code>"memory"</code> for testing, <code>"supabase"</code> for production.</td></tr>
+          <tr><td><code>embedding</code></td><td>No</td><td>How text becomes vectors. <code>"openai"</code> or omit for no embeddings.</td></tr>
+          <tr><td><code>critic</code></td><td>No</td><td>How items are scored. Defaults to <code>"heuristic"</code> (keyword-based).</td></tr>
+          <tr><td><code>selection</code></td><td>No</td><td>Tune selection: epsilon, weights, freshness half-life.</td></tr>
+          <tr><td><code>aggregation</code></td><td>No</td><td>Tune aggregation: decay factor, critic/engagement weights.</td></tr>
+          <tr><td><code>telemetry</code></td><td>No</td><td>Plug in tracing (OpenTelemetry, Datadog). Defaults to no-op.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ADVANCED -->
+    <div class="level-advanced">
+      <p>Each config slot uses a union type allowing string shorthand, typed config object, or raw interface instance. Resolution order in the factory:</p>
+      <ol>
+        <li>Check if value implements the interface (duck typing)</li>
+        <li>Check for string shorthand</li>
+        <li>Check for config object with <code>provider</code> field</li>
+        <li>Throw <code>ValidationError</code> on unrecognized config</li>
+      </ol>
+      <p>String shorthands read env vars via <code>Deno.env.get()</code>. Missing env vars throw <code>ValidationError</code> with a descriptive message.</p>
+    </div>
+
+    <!-- ============================================================ -->
+    <h2 id="SemanticLoopEngine">SemanticLoopEngine</h2>
+
+    <!-- VIBE -->
+    <div class="level-vibe">
+      <div class="code-block">
+        <div class="code-block-header">
+          <div class="code-block-dots"><span></span><span></span><span></span></div>
+          <span class="code-block-title">class</span>
+        </div>
+        <pre><span class="kw">class</span> <span class="ty">SemanticLoopEngine</span> {
+  <span class="kw">constructor</span>(options: <span class="ty">EngineOptions</span>)
+  <span class="fn">seed</span>(items: <span class="kw">readonly</span> <span class="ty">SemanticItem</span>[]): <span class="ty">Promise</span>&lt;<span class="kw">void</span>&gt;
+  <span class="fn">selectNext</span>(request: <span class="ty">SelectRequest</span>): <span class="ty">Promise</span>&lt;<span class="ty">SelectedCandidate</span>&gt;
+  <span class="fn">ingestOutcome</span>(outcome: <span class="ty">OutcomeSignal</span>): <span class="ty">Promise</span>&lt;<span class="ty">ProcessedOutcome</span>&gt;
+}</pre>
+      </div>
+    </div>
+
+    <!-- BEGINNER -->
+    <div class="level-beginner">
+      <p>The core engine that orchestrates selection and ingestion. You usually access it via <code>loop.engine</code> rather than constructing it directly.</p>
+      <table>
+        <thead><tr><th>Method</th><th>What it does</th></tr></thead>
+        <tbody>
+          <tr><td><code>seed(items)</code></td><td>Validates and stores items (expects fully-formed <code>SemanticItem</code> objects with IDs and embeddings).</td></tr>
+          <tr><td><code>selectNext(request)</code></td><td>Retrieves candidates from the store, scores them, and picks one via epsilon-greedy. Throws <code>NotFoundError</code> if no candidates match.</td></tr>
+          <tr><td><code>ingestOutcome(outcome)</code></td><td>Looks up the item, runs the critic, computes the final score, records the outcome, and updates aggregate state.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ADVANCED -->
+    <div class="level-advanced">
+      <div class="code-block">
+        <div class="code-block-header">
+          <div class="code-block-dots"><span></span><span></span><span></span></div>
+          <span class="code-block-title">class</span>
+        </div>
+        <pre><span class="kw">class</span> <span class="ty">SemanticLoopEngine</span> {
+  <span class="kw">constructor</span>(options: <span class="ty">EngineOptions</span>)
+  <span class="fn">seed</span>(items: <span class="kw">readonly</span> <span class="ty">SemanticItem</span>[]): <span class="ty">Promise</span>&lt;<span class="kw">void</span>&gt;
+  <span class="fn">selectNext</span>(request: <span class="ty">SelectRequest</span>): <span class="ty">Promise</span>&lt;<span class="ty">SelectedCandidate</span>&gt;
+  <span class="fn">ingestOutcome</span>(outcome: <span class="ty">OutcomeSignal</span>): <span class="ty">Promise</span>&lt;<span class="ty">ProcessedOutcome</span>&gt;
+}</pre>
+      </div>
+      <p>The engine is stateless &mdash; all state lives in the <code>MemoryStore</code>. Every method is a request-response cycle against the store.</p>
+      <p><code>EngineOptions</code>:</p>
+      <div class="code-block">
+        <div class="code-block-header">
+          <div class="code-block-dots"><span></span><span></span><span></span></div>
+          <span class="code-block-title">EngineOptions</span>
+        </div>
+        <pre><span class="kw">interface</span> <span class="ty">EngineOptions</span> {
+  <span class="kw">readonly</span> store: <span class="ty">MemoryStore</span>;
+  <span class="kw">readonly</span> critic: <span class="ty">Critic</span>;
+  <span class="kw">readonly</span> telemetry?: <span class="ty">Telemetry</span>;
+  <span class="kw">readonly</span> config?: <span class="ty">Partial</span>&lt;<span class="ty">LoopConfig</span>&gt;;
+  <span class="kw">readonly</span> random?: () <span class="op">=&gt;</span> <span class="ty">number</span>;  <span class="cm">// injectable for deterministic tests</span>
+  <span class="kw">readonly</span> now?: () <span class="op">=&gt;</span> <span class="ty">Date</span>;       <span class="cm">// injectable for deterministic tests</span>
+}</pre>
+      </div>
+      <p>The <code>random</code> and <code>now</code> injectors make the engine fully deterministic for testing. The engine catches nothing &mdash; errors propagate to the caller. Private fields use true ES <code>#</code> private members.</p>
+      <p>The <code>ingestOutcome</code> pipeline: validate &rarr; getItem &rarr; getAggregate &rarr; critic.score &rarr; combineScores &rarr; appendOutcome &rarr; updateAggregate. Final score = <code>criticScore &times; criticWeight + engagementScore &times; engagementWeight</code>.</p>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- CORE TYPES -->
+    <!-- ============================================================ -->
+
+    <h2 id="SemanticItem">SemanticItem</h2>
+
+    <!-- VIBE -->
+    <div class="level-vibe">
+      <div class="code-block">
+        <div class="code-block-header">
+          <div class="code-block-dots"><span></span><span></span><span></span></div>
+          <span class="code-block-title">type</span>
+        </div>
+        <pre><span class="kw">interface</span> <span class="ty">SemanticItem</span> {
+  <span class="kw">readonly</span> id: <span class="ty">string</span>;
+  <span class="kw">readonly</span> tribe: <span class="ty">string</span>;
+  <span class="kw">readonly</span> kind: <span class="ty">string</span>;
+  <span class="kw">readonly</span> content: <span class="ty">string</span>;
+  <span class="kw">readonly</span> embedding: <span class="ty">EmbeddingVector</span>; <span class="cm">// readonly number[]</span>
+  <span class="kw">readonly</span> metadata: <span class="ty">JsonObject</span>;
+  <span class="kw">readonly</span> createdAt: <span class="ty">string</span>;       <span class="cm">// ISO 8601</span>
+  <span class="kw">readonly</span> updatedAt: <span class="ty">string</span>;       <span class="cm">// ISO 8601</span>
+  <span class="kw">readonly</span> archivedAt?: <span class="ty">string</span>;     <span class="cm">// ISO 8601</span>
+}</pre>
+      </div>
+    </div>
+
+    <!-- BEGINNER -->
+    <div class="level-beginner">
+      <p>A piece of content stored in the loop. Every item has:</p>
+      <ul>
+        <li><code>id</code> &mdash; unique identifier (auto-generated UUID if not provided)</li>
+        <li><code>tribe</code> &mdash; audience segment (e.g., "founders", "developers")</li>
+        <li><code>kind</code> &mdash; content type (e.g., "hook", "prompt", "headline")</li>
+        <li><code>content</code> &mdash; the actual text content</li>
+        <li><code>embedding</code> &mdash; vector representation for similarity search</li>
+        <li><code>metadata</code> &mdash; any extra JSON data you want to attach</li>
+        <li><code>createdAt</code> / <code>updatedAt</code> &mdash; timestamps</li>
+        <li><code>archivedAt</code> &mdash; set when you want to retire an item without deleting it</li>
+      </ul>
+    </div>
+
+    <!-- ADVANCED -->
+    <div class="level-advanced">
+      <p>All fields are <code>readonly</code>. The embedding is <code>readonly number[]</code> (aliased as <code>EmbeddingVector</code>). Dates are ISO 8601 strings, not <code>Date</code> objects, for serialization safety across edge runtimes.</p>
+    </div>
+
+    <!-- ============================================================ -->
+    <h2 id="ItemInput">ItemInput</h2>
+
+    <div class="level-vibe">
+      <div class="code-block">
+        <div class="code-block-header">
+          <div class="code-block-dots"><span></span><span></span><span></span></div>
+          <span class="code-block-title">type</span>
+        </div>
+        <pre><span class="kw">interface</span> <span class="ty">ItemInput</span> {
+  <span class="kw">readonly</span> content: <span class="ty">string</span>;
+  <span class="kw">readonly</span> tribe?: <span class="ty">string</span>;      <span class="cm">// default: "default"</span>
+  <span class="kw">readonly</span> kind?: <span class="ty">string</span>;       <span class="cm">// default: "item"</span>
+  <span class="kw">readonly</span> id?: <span class="ty">string</span>;         <span class="cm">// default: crypto.randomUUID()</span>
+  <span class="kw">readonly</span> metadata?: <span class="ty">JsonObject</span>;
+  <span class="kw">readonly</span> embedding?: <span class="ty">EmbeddingVector</span>; <span class="cm">// skip auto-embed if provided</span>
+}</pre>
+      </div>
+    </div>
+
+    <div class="level-beginner">
+      <p>What you pass to <code>loop.seed()</code>. Only <code>content</code> is required &mdash; everything else has defaults.</p>
+      <div class="code-block">
+        <div class="code-block-header">
+          <div class="code-block-dots"><span></span><span></span><span></span></div>
+          <span class="code-block-title">type</span>
+        </div>
+        <pre><span class="kw">interface</span> <span class="ty">ItemInput</span> {
+  <span class="kw">readonly</span> content: <span class="ty">string</span>;          <span class="cm">// required</span>
+  <span class="kw">readonly</span> tribe?: <span class="ty">string</span>;          <span class="cm">// defaults to "default"</span>
+  <span class="kw">readonly</span> kind?: <span class="ty">string</span>;           <span class="cm">// defaults to "item"</span>
+  <span class="kw">readonly</span> id?: <span class="ty">string</span>;             <span class="cm">// defaults to crypto.randomUUID()</span>
+  <span class="kw">readonly</span> metadata?: <span class="ty">JsonObject</span>;    <span class="cm">// defaults to {}</span>
+  <span class="kw">readonly</span> embedding?: <span class="ty">EmbeddingVector</span>; <span class="cm">// if provided, skips auto-embedding</span>
+}</pre>
+      </div>
+    </div>
+
+    <div class="level-advanced">
+      <p>When <code>embedding</code> is provided, the item skips the embedding provider entirely. This is useful for pre-computed embeddings or migrating data. The <code>seed()</code> method batch-embeds all items missing embeddings in a single <code>embedBatch()</code> call when available.</p>
+    </div>
+
+    <!-- ============================================================ -->
+    <h2 id="Candidate">Candidate</h2>
+
+    <div class="level-vibe">
+      <div class="code-block">
+        <div class="code-block-header">
+          <div class="code-block-dots"><span></span><span></span><span></span></div>
+          <span class="code-block-title">type</span>
+        </div>
+        <pre><span class="kw">interface</span> <span class="ty">Candidate</span> {
+  <span class="kw">readonly</span> item: <span class="ty">SemanticItem</span>;
+  <span class="kw">readonly</span> aggregate: <span class="ty">AggregateState</span>;
+  <span class="kw">readonly</span> similarity: <span class="ty">number</span>; <span class="cm">// [0, 1]</span>
+}</pre>
+      </div>
+    </div>
+
+    <div class="level-beginner">
+      <p>A candidate for selection. Combines the item, its aggregate scores, and its similarity to the current query. Returned by <code>store.retrieve()</code>.</p>
+    </div>
+
+    <div class="level-advanced">
+      <p>Similarity is cosine similarity mapped to [0, 1] via <code>(dot / (|a| * |b|) + 1) / 2</code>. When no query vector is provided, the store assigns a default similarity of <code>0.5</code>.</p>
+    </div>
+
+    <!-- ============================================================ -->
+    <h2 id="SelectedCandidate">SelectedCandidate</h2>
+
+    <div class="level-vibe">
+      <div class="code-block">
+        <div class="code-block-header">
+          <div class="code-block-dots"><span></span><span></span><span></span></div>
+          <span class="code-block-title">type</span>
+        </div>
+        <pre><span class="kw">interface</span> <span class="ty">SelectedCandidate</span> {
+  <span class="kw">readonly</span> candidate: <span class="ty">Candidate</span>;
+  <span class="kw">readonly</span> strategy: <span class="str">"greedy"</span> <span class="op">|</span> <span class="str">"explore"</span>;
+  <span class="kw">readonly</span> weightedScore: <span class="ty">number</span>; <span class="cm">// [0, 1]</span>
+}</pre>
+      </div>
+    </div>
+
+    <div class="level-beginner">
+      <p>The result of <code>select()</code>. Tells you which item was picked, whether the algorithm exploited (picked the best) or explored (picked randomly from the top pool), and the computed weighted score.</p>
+    </div>
+
+    <div class="level-advanced">
+      <p>The <code>weightedScore</code> is the four-dimensional weighted sum: <code>similarity &times; w1 + scoreAvg &times; w2 + exploration &times; w3 + freshness &times; w4</code>. When <code>strategy</code> is <code>"explore"</code>, the selected candidate may not have the highest <code>weightedScore</code> &mdash; it was randomly sampled from the top-k pool.</p>
+    </div>
+
+    <!-- ============================================================ -->
+    <h2 id="AggregateState">AggregateState</h2>
+
+    <div class="level-vibe">
+      <div class="code-block">
+        <div class="code-block-header">
+          <div class="code-block-dots"><span></span><span></span><span></span></div>
+          <span class="code-block-title">type</span>
+        </div>
+        <pre><span class="kw">interface</span> <span class="ty">AggregateState</span> {
+  <span class="kw">readonly</span> itemId: <span class="ty">string</span>;
+  <span class="kw">readonly</span> attempts: <span class="ty">number</span>;
+  <span class="kw">readonly</span> scoreSum: <span class="ty">number</span>;
+  <span class="kw">readonly</span> scoreAvg: <span class="ty">number</span>;       <span class="cm">// [0, 1]</span>
+  <span class="kw">readonly</span> criticAvg: <span class="ty">number</span>;      <span class="cm">// [0, 1]</span>
+  <span class="kw">readonly</span> engagementAvg: <span class="ty">number</span>;  <span class="cm">// [0, 1]</span>
+  <span class="kw">readonly</span> lastScore?: <span class="ty">number</span>;
+  <span class="kw">readonly</span> lastCriticScore?: <span class="ty">number</span>;
+  <span class="kw">readonly</span> lastEngagementScore?: <span class="ty">number</span>;
+  <span class="kw">readonly</span> lastOutcomeAt?: <span class="ty">string</span>;
+  <span class="kw">readonly</span> updatedAt: <span class="ty">string</span>;
+}</pre>
+      </div>
+    </div>
+
+    <div class="level-beginner">
+      <p>The running scores for an item. Updated every time an outcome is ingested. The <code>scoreAvg</code> is the key number that drives selection &mdash; items with higher averages get picked more often.</p>
+    </div>
+
+    <div class="level-advanced">
+      <p>Aggregation uses decay-weighted sums: <code>scoreSum = oldScoreSum &times; decayFactor + finalScore</code>, then <code>scoreAvg = scoreSum / attempts</code>. All averages are clamped to [0, 1]. The <code>last*</code> fields are from the most recent outcome only &mdash; useful for debugging and analytics.</p>
+    </div>
+
+    <!-- ============================================================ -->
+    <h2 id="OutcomeSignal">OutcomeSignal</h2>
+
+    <div class="level-vibe">
+      <div class="code-block">
+        <div class="code-block-header">
+          <div class="code-block-dots"><span></span><span></span><span></span></div>
+          <span class="code-block-title">type</span>
+        </div>
+        <pre><span class="kw">interface</span> <span class="ty">OutcomeSignal</span> {
+  <span class="kw">readonly</span> id: <span class="ty">string</span>;
+  <span class="kw">readonly</span> itemId: <span class="ty">string</span>;
+  <span class="kw">readonly</span> platform: <span class="ty">string</span>;
+  <span class="kw">readonly</span> occurredAt: <span class="ty">string</span>;
+  <span class="kw">readonly</span> metrics: <span class="ty">EngagementMetrics</span>;
+  <span class="kw">readonly</span> engagementScore: <span class="ty">number</span>; <span class="cm">// [0, 1]</span>
+  <span class="kw">readonly</span> payload?: <span class="ty">JsonObject</span>;
+}</pre>
+      </div>
+    </div>
+
+    <div class="level-beginner">
+      <p>A raw outcome event. Created automatically by <code>loop.ingest()</code> or passed directly to <code>engine.ingestOutcome()</code>. The <code>platform</code> field tracks where the outcome came from (e.g., "instagram", "twitter", "email").</p>
+    </div>
+
+    <div class="level-advanced">
+      <p>The high-level <code>ingest()</code> constructs this from its arguments, auto-generating <code>id</code> and <code>occurredAt</code>. When using the engine directly, you must provide all fields. The <code>engagementScore</code> must be pre-derived (use <code>deriveEngagementScore()</code> from utils).</p>
+    </div>
+
+    <!-- ============================================================ -->
+    <h2 id="EngagementMetrics">EngagementMetrics</h2>
+
+    <div class="level-vibe">
+      <div class="code-block">
+        <div class="code-block-header">
+          <div class="code-block-dots"><span></span><span></span><span></span></div>
+          <span class="code-block-title">type</span>
+        </div>
+        <pre><span class="kw">interface</span> <span class="ty">EngagementMetrics</span> {
+  <span class="kw">readonly</span> impressions?: <span class="ty">number</span>;
+  <span class="kw">readonly</span> views?: <span class="ty">number</span>;
+  <span class="kw">readonly</span> watchSeconds?: <span class="ty">number</span>;
+  <span class="kw">readonly</span> avgWatchSeconds?: <span class="ty">number</span>;
+  <span class="kw">readonly</span> likes?: <span class="ty">number</span>;
+  <span class="kw">readonly</span> comments?: <span class="ty">number</span>;
+  <span class="kw">readonly</span> shares?: <span class="ty">number</span>;
+  <span class="kw">readonly</span> saves?: <span class="ty">number</span>;
+  <span class="kw">readonly</span> clicks?: <span class="ty">number</span>;
+  <span class="kw">readonly</span> conversions?: <span class="ty">number</span>;
+}</pre>
+      </div>
+    </div>
+
+    <div class="level-beginner">
+      <p>Raw engagement numbers from a platform. All fields are optional &mdash; pass whatever you have. The system derives a single <code>engagementScore</code> from these using a weighted formula.</p>
+    </div>
+
+    <div class="level-advanced">
+      <p>Engagement derivation: <code>interactionRate = (likes + comments&times;2 + shares&times;3 + saves&times;2 + clicks&times;2 + conversions&times;4) / views</code>. Watch signal: <code>clamp(avgWatchSeconds / 30)</code>. Final: <code>interactionRate &times; 0.7 + watchSignal &times; 0.3</code>. Uses <code>views</code> first, falls back to <code>impressions</code>, then 0.</p>
+    </div>
+
+    <!-- ============================================================ -->
+    <h2 id="ProcessedOutcome">ProcessedOutcome</h2>
+
+    <div class="level-vibe">
+      <div class="code-block">
+        <div class="code-block-header">
+          <div class="code-block-dots"><span></span><span></span><span></span></div>
+          <span class="code-block-title">type</span>
+        </div>
+        <pre><span class="kw">interface</span> <span class="ty">ProcessedOutcome</span> {
+  <span class="kw">readonly</span> item: <span class="ty">SemanticItem</span>;
+  <span class="kw">readonly</span> outcome: <span class="ty">OutcomeSignal</span>;
+  <span class="kw">readonly</span> critic: <span class="ty">CriticResult</span>;
+  <span class="kw">readonly</span> aggregate: <span class="ty">AggregateState</span>; <span class="cm">// after update</span>
+  <span class="kw">readonly</span> finalScore: <span class="ty">number</span>;       <span class="cm">// [0, 1]</span>
+}</pre>
+      </div>
+    </div>
+
+    <div class="level-beginner">
+      <p>The result of <code>ingest()</code>. Contains everything that happened: the item, the raw outcome, the critic's judgment, the updated aggregate scores, and the final combined score.</p>
+    </div>
+
+    <div class="level-advanced">
+      <p>The <code>aggregate</code> is the <strong>post-update</strong> state. The <code>finalScore</code> is <code>criticScore &times; criticWeight + engagementScore &times; engagementWeight</code> (default 0.6/0.4 split).</p>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- CONFIG TYPES -->
+    <!-- ============================================================ -->
+
+    <h2 id="SelectionConfig">SelectionConfig</h2>
+
+    <div class="level-vibe">
+      <div class="code-block">
+        <div class="code-block-header">
+          <div class="code-block-dots"><span></span><span></span><span></span></div>
+          <span class="code-block-title">type + defaults</span>
+        </div>
+        <pre><span class="kw">interface</span> <span class="ty">SelectionConfig</span> {
+  <span class="kw">readonly</span> epsilon: <span class="ty">number</span>;              <span class="cm">// 0.18</span>
+  <span class="kw">readonly</span> topKExplorationPool: <span class="ty">number</span>;  <span class="cm">// 3</span>
+  <span class="kw">readonly</span> weights: <span class="ty">SelectionWeights</span>;    <span class="cm">// { similarity: 0.45, scoreAvg: 0.35, exploration: 0.15, freshness: 0.05 }</span>
+  <span class="kw">readonly</span> freshnessHalfLifeHours: <span class="ty">number</span>; <span class="cm">// 168</span>
+}</pre>
+      </div>
+    </div>
+
+    <div class="level-beginner">
+      <p>Controls how the loop picks items.</p>
+      <ul>
+        <li><code>epsilon</code> &mdash; probability of exploring (trying something new) instead of exploiting (picking the best). Higher = more exploration.</li>
+        <li><code>topKExplorationPool</code> &mdash; when exploring, how many top items to randomly sample from.</li>
+        <li><code>weights</code> &mdash; how much each factor matters in the score.</li>
+        <li><code>freshnessHalfLifeHours</code> &mdash; how quickly the freshness bonus decays. 168 hours = 1 week.</li>
+      </ul>
+    </div>
+
+    <div class="level-advanced">
+      <p>Weights don't need to sum to 1 &mdash; the final weighted score is clamped to [0, 1]. Freshness uses exponential decay: <code>e^(-ln(2) &times; hoursElapsed / halfLife)</code>. Exploration score: <code>1 / max(1, attempts + 1)</code>.</p>
+    </div>
+
+    <!-- ============================================================ -->
+    <h2 id="AggregationConfig">AggregationConfig</h2>
+
+    <div class="level-vibe">
+      <div class="code-block">
+        <div class="code-block-header">
+          <div class="code-block-dots"><span></span><span></span><span></span></div>
+          <span class="code-block-title">type + defaults</span>
+        </div>
+        <pre><span class="kw">interface</span> <span class="ty">AggregationConfig</span> {
+  <span class="kw">readonly</span> criticWeight: <span class="ty">number</span>;      <span class="cm">// 0.6</span>
+  <span class="kw">readonly</span> engagementWeight: <span class="ty">number</span>;  <span class="cm">// 0.4</span>
+  <span class="kw">readonly</span> decayFactor: <span class="ty">number</span>;       <span class="cm">// 0.95</span>
+}</pre>
+      </div>
+    </div>
+
+    <div class="level-beginner">
+      <p>Controls how outcomes are scored and aggregated.</p>
+      <ul>
+        <li><code>criticWeight</code> &mdash; how much the critic's opinion matters in the final score.</li>
+        <li><code>engagementWeight</code> &mdash; how much raw engagement matters.</li>
+        <li><code>decayFactor</code> &mdash; older scores are multiplied by this before adding new ones. Lower = faster forgetting.</li>
+      </ul>
+    </div>
+
+    <div class="level-advanced">
+      <p>The decay is applied to <code>scoreSum</code> before adding the new final score: <code>scoreSum = oldScoreSum &times; decayFactor + finalScore</code>. This means with a decay of 0.95, after 14 outcomes the oldest score's contribution is <code>0.95^14 &asymp; 0.49</code> &mdash; halved.</p>
+    </div>
+
+    <!-- ============================================================ -->
+    <h2 id="SelectOptions">SelectOptions</h2>
+
+    <div class="level-vibe">
+      <div class="code-block">
+        <div class="code-block-header">
+          <div class="code-block-dots"><span></span><span></span><span></span></div>
+          <span class="code-block-title">type</span>
+        </div>
+        <pre><span class="kw">interface</span> <span class="ty">SelectOptions</span> {
+  <span class="kw">readonly</span> tribe?: <span class="ty">string</span>;
+  <span class="kw">readonly</span> kind?: <span class="ty">string</span>;
+  <span class="kw">readonly</span> limit?: <span class="ty">number</span>;          <span class="cm">// default: 8</span>
+  <span class="kw">readonly</span> minSimilarity?: <span class="ty">number</span>;  <span class="cm">// default: 0</span>
+  <span class="kw">readonly</span> includeArchived?: <span class="ty">boolean</span>;
+  <span class="kw">readonly</span> selection?: <span class="ty">Partial</span>&lt;<span class="ty">SelectionConfig</span>&gt;;
+}</pre>
+      </div>
+    </div>
+
+    <div class="level-beginner">
+      <p>Options for <code>loop.select()</code>. Filter by tribe, kind, set a minimum similarity threshold, or override selection config per-call.</p>
+    </div>
+
+    <div class="level-advanced">
+      <p>The <code>selection</code> field allows per-call overrides of epsilon, weights, etc. This is useful for A/B testing different selection strategies without creating multiple loop instances.</p>
+    </div>
+
+    <!-- ============================================================ -->
+    <h2 id="IngestOptions">IngestOptions</h2>
+
+    <div class="level-vibe">
+      <div class="code-block">
+        <div class="code-block-header">
+          <div class="code-block-dots"><span></span><span></span><span></span></div>
+          <span class="code-block-title">type</span>
+        </div>
+        <pre><span class="kw">interface</span> <span class="ty">IngestOptions</span> {
+  <span class="kw">readonly</span> id?: <span class="ty">string</span>;               <span class="cm">// default: crypto.randomUUID()</span>
+  <span class="kw">readonly</span> occurredAt?: <span class="ty">string</span>;       <span class="cm">// default: new Date().toISOString()</span>
+  <span class="kw">readonly</span> engagementScore?: <span class="ty">number</span>;  <span class="cm">// override auto-derivation</span>
+  <span class="kw">readonly</span> payload?: <span class="ty">JsonObject</span>;      <span class="cm">// extra data</span>
+}</pre>
+      </div>
+    </div>
+
+    <div class="level-beginner">
+      <p>Optional overrides for <code>loop.ingest()</code>. Mostly used for replaying historical data (custom <code>id</code> and <code>occurredAt</code>) or overriding the auto-derived engagement score.</p>
+    </div>
+
+    <div class="level-advanced">
+      <p>Setting <code>engagementScore</code> bypasses <code>deriveEngagementScore()</code>. Useful when you have a custom engagement formula or pre-computed scores from an external system. The <code>payload</code> is stored alongside the outcome for audit trails.</p>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- INTERFACES -->
+    <!-- ============================================================ -->
+
+    <h2 id="MemoryStore">MemoryStore</h2>
+
+    <!-- VIBE -->
+    <div class="level-vibe">
+      <div class="code-block">
+        <div class="code-block-header">
+          <div class="code-block-dots"><span></span><span></span><span></span></div>
+          <span class="code-block-title">interface</span>
+        </div>
+        <pre><span class="kw">interface</span> <span class="ty">MemoryStore</span> {
+  <span class="fn">upsertItem</span>(item: <span class="ty">SemanticItem</span>): <span class="ty">Promise</span>&lt;<span class="kw">void</span>&gt;;
+  <span class="fn">retrieve</span>(request: <span class="ty">RetrieveRequest</span>): <span class="ty">Promise</span>&lt;<span class="kw">readonly</span> <span class="ty">Candidate</span>[]&gt;;
+  <span class="fn">getItem</span>(itemId: <span class="ty">string</span>): <span class="ty">Promise</span>&lt;<span class="ty">SemanticItem</span> <span class="op">|</span> <span class="kw">null</span>&gt;;
+  <span class="fn">getAggregate</span>(itemId: <span class="ty">string</span>): <span class="ty">Promise</span>&lt;<span class="ty">AggregateState</span> <span class="op">|</span> <span class="kw">null</span>&gt;;
+  <span class="fn">appendOutcome</span>(outcome: <span class="ty">OutcomeSignal</span>, critic: <span class="ty">CriticResult</span>, finalScore: <span class="ty">number</span>): <span class="ty">Promise</span>&lt;<span class="kw">void</span>&gt;;
+  <span class="fn">updateAggregate</span>(update: <span class="ty">AggregateUpdate</span>, config: <span class="ty">AggregationConfig</span>): <span class="ty">Promise</span>&lt;<span class="ty">AggregateState</span>&gt;;
+}</pre>
+      </div>
+    </div>
+
+    <!-- BEGINNER -->
+    <div class="level-beginner">
+      <p>The contract for where data lives. Implement this to use any backend.</p>
+      <table>
+        <thead><tr><th>Method</th><th>What it does</th></tr></thead>
+        <tbody>
+          <tr><td><code>upsertItem(item)</code></td><td>Insert or update an item. Must be idempotent.</td></tr>
+          <tr><td><code>retrieve(request)</code></td><td>Find candidates matching the query, tribe, and kind filters.</td></tr>
+          <tr><td><code>getItem(itemId)</code></td><td>Get a single item by ID. Returns null if not found.</td></tr>
+          <tr><td><code>getAggregate(itemId)</code></td><td>Get the aggregate scores for an item. Returns null if no scores yet.</td></tr>
+          <tr><td><code>appendOutcome(...)</code></td><td>Store a raw outcome event with its critic result.</td></tr>
+          <tr><td><code>updateAggregate(...)</code></td><td>Apply a new outcome to the running aggregates.</td></tr>
+        </tbody>
+      </table>
+      <p>Ships with <code>InMemoryStore</code> (testing) and <code>SupabaseRpcStore</code> (production).</p>
+    </div>
+
+    <!-- ADVANCED -->
+    <div class="level-advanced">
+      <div class="code-block">
+        <div class="code-block-header">
+          <div class="code-block-dots"><span></span><span></span><span></span></div>
+          <span class="code-block-title">interface</span>
+        </div>
+        <pre><span class="kw">interface</span> <span class="ty">MemoryStore</span> {
+  <span class="fn">upsertItem</span>(item: <span class="ty">SemanticItem</span>): <span class="ty">Promise</span>&lt;<span class="kw">void</span>&gt;;
+  <span class="fn">retrieve</span>(request: <span class="ty">RetrieveRequest</span>): <span class="ty">Promise</span>&lt;<span class="kw">readonly</span> <span class="ty">Candidate</span>[]&gt;;
+  <span class="fn">getItem</span>(itemId: <span class="ty">string</span>): <span class="ty">Promise</span>&lt;<span class="ty">SemanticItem</span> <span class="op">|</span> <span class="kw">null</span>&gt;;
+  <span class="fn">getAggregate</span>(itemId: <span class="ty">string</span>): <span class="ty">Promise</span>&lt;<span class="ty">AggregateState</span> <span class="op">|</span> <span class="kw">null</span>&gt;;
+  <span class="fn">appendOutcome</span>(outcome: <span class="ty">OutcomeSignal</span>, critic: <span class="ty">CriticResult</span>, finalScore: <span class="ty">number</span>): <span class="ty">Promise</span>&lt;<span class="kw">void</span>&gt;;
+  <span class="fn">updateAggregate</span>(update: <span class="ty">AggregateUpdate</span>, config: <span class="ty">AggregationConfig</span>): <span class="ty">Promise</span>&lt;<span class="ty">AggregateState</span>&gt;;
+}</pre>
+      </div>
+      <p>Key contract requirements for custom implementations:</p>
+      <ul>
+        <li><code>upsertItem</code> must be idempotent (use <code>on conflict</code> in SQL)</li>
+        <li><code>retrieve</code> must return candidates sorted by similarity desc, then scoreAvg desc</li>
+        <li><code>updateAggregate</code> must apply decay and clamp all averages to [0, 1]</li>
+        <li><code>updateAggregate</code> should use row-level locking to prevent race conditions</li>
+        <li>All methods are <code>async</code> for adapter interface consistency</li>
+      </ul>
+    </div>
+
+    <!-- ============================================================ -->
+    <h2 id="Critic">Critic</h2>
+
+    <div class="level-vibe">
+      <div class="code-block">
+        <div class="code-block-header">
+          <div class="code-block-dots"><span></span><span></span><span></span></div>
+          <span class="code-block-title">interface</span>
+        </div>
+        <pre><span class="kw">interface</span> <span class="ty">Critic</span> {
+  <span class="fn">score</span>(input: <span class="ty">CriticInput</span>): <span class="ty">Promise</span>&lt;<span class="ty">CriticResult</span>&gt;;
+}
+
+<span class="kw">interface</span> <span class="ty">CriticInput</span> {
+  <span class="kw">readonly</span> item: <span class="ty">SemanticItem</span>;
+  <span class="kw">readonly</span> aggregateBefore: <span class="ty">AggregateState</span>;
+  <span class="kw">readonly</span> outcome: <span class="ty">OutcomeSignal</span>;
+}
+
+<span class="kw">interface</span> <span class="ty">CriticResult</span> {
+  <span class="kw">readonly</span> score: <span class="ty">number</span>;         <span class="cm">// [0, 1]</span>
+  <span class="kw">readonly</span> rationale: <span class="ty">string</span>;
+  <span class="kw">readonly</span> tags: <span class="kw">readonly</span> <span class="ty">string</span>[];
+  <span class="kw">readonly</span> meta?: <span class="ty">JsonObject</span>;
+}</pre>
+      </div>
+    </div>
+
+    <div class="level-beginner">
+      <p>How content is judged after an outcome. The critic sees the item, its previous scores, and the outcome. It returns a score between 0 and 1, a human-readable rationale, and tags for categorization.</p>
+      <p>Ships with <code>HeuristicCritic</code> (keyword-based). The <code>pro/</code> package adds <code>LlmCritic</code> and <code>MultiSignalCritic</code>.</p>
+    </div>
+
+    <div class="level-advanced">
+      <p>The <code>aggregateBefore</code> field provides historical context &mdash; the critic can factor in how many attempts the item has had and its running averages. The <code>meta</code> field in <code>CriticResult</code> is stored alongside the outcome for audit trails.</p>
+    </div>
+
+    <!-- ============================================================ -->
+    <h2 id="EmbeddingProvider">EmbeddingProvider</h2>
+
+    <div class="level-vibe">
+      <div class="code-block">
+        <div class="code-block-header">
+          <div class="code-block-dots"><span></span><span></span><span></span></div>
+          <span class="code-block-title">interface</span>
+        </div>
+        <pre><span class="kw">interface</span> <span class="ty">EmbeddingProvider</span> {
+  <span class="fn">embed</span>(text: <span class="ty">string</span>): <span class="ty">Promise</span>&lt;<span class="ty">EmbeddingVector</span>&gt;;
+  <span class="fn">embedBatch</span>?(texts: <span class="kw">readonly</span> <span class="ty">string</span>[]): <span class="ty">Promise</span>&lt;<span class="kw">readonly</span> <span class="ty">EmbeddingVector</span>[]&gt;;
+  <span class="kw">readonly</span> dimensions: <span class="ty">number</span>;
+}</pre>
+      </div>
+    </div>
+
+    <div class="level-beginner">
+      <p>Turns text into vectors for similarity search. The <code>dimensions</code> property tells the system how long the vectors are (e.g., 1536 for OpenAI's <code>text-embedding-3-small</code>).</p>
+      <p><code>embedBatch</code> is optional but recommended &mdash; it lets <code>seed()</code> embed all items in one API call instead of one per item.</p>
+    </div>
+
+    <div class="level-advanced">
+      <p>When <code>dimensions</code> is 0 (as with <code>NoopEmbedding</code>), <code>select()</code> skips query embedding entirely. Implement this interface for custom embedding backends (Cohere, local ONNX models, etc.).</p>
+    </div>
+
+    <!-- ============================================================ -->
+    <h2 id="Telemetry">Telemetry</h2>
+
+    <div class="level-vibe">
+      <div class="code-block">
+        <div class="code-block-header">
+          <div class="code-block-dots"><span></span><span></span><span></span></div>
+          <span class="code-block-title">interface</span>
+        </div>
+        <pre><span class="kw">interface</span> <span class="ty">Telemetry</span> {
+  <span class="fn">startSpan</span>(name: <span class="ty">string</span>): <span class="ty">SpanLike</span>;
+}
+
+<span class="kw">interface</span> <span class="ty">SpanLike</span> {
+  <span class="fn">setAttribute</span>(name: <span class="ty">string</span>, value: <span class="ty">string</span> <span class="op">|</span> <span class="ty">number</span> <span class="op">|</span> <span class="ty">boolean</span>): <span class="kw">void</span>;
+  <span class="fn">end</span>(): <span class="kw">void</span>;
+}</pre>
+      </div>
+    </div>
+
+    <div class="level-beginner">
+      <p>Observe the loop itself. Maps to OpenTelemetry, Datadog, or any tracing provider. Defaults to <code>NoopTelemetry</code> (zero overhead).</p>
+    </div>
+
+    <div class="level-advanced">
+      <p>Span names: <code>"semantic_loop.seed"</code>, <code>"semantic_loop.select_next"</code>, <code>"semantic_loop.ingest_outcome"</code>. Attributes include item count, tribe, kind, strategy, scores. The interface is intentionally minimal to avoid vendor lock-in.</p>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- IMPLEMENTATIONS -->
+    <!-- ============================================================ -->
+
+    <h2 id="InMemoryStore">InMemoryStore</h2>
+
+    <div class="level-vibe">
+      <div class="code-block">
+        <div class="code-block-header">
+          <div class="code-block-dots"><span></span><span></span><span></span></div>
+          <span class="code-block-title">usage</span>
+        </div>
+        <pre><span class="kw">import</span> { InMemoryStore } <span class="kw">from</span> <span class="str">"@semantic-loop/core"</span>;
+<span class="kw">const</span> store <span class="op">=</span> <span class="kw">new</span> <span class="fn">InMemoryStore</span>();</pre>
+      </div>
+    </div>
+
+    <div class="level-beginner">
+      <p>A <code>MemoryStore</code> backed by JavaScript <code>Map</code> objects. Data lives in memory and is lost when the process exits. Great for testing and prototyping.</p>
+    </div>
+
+    <div class="level-advanced">
+      <p>Accepts an optional <code>now?: () =&gt; Date</code> constructor argument for deterministic testing. Similarity without a query vector defaults to <code>0.5</code>. Sorting: similarity desc, then scoreAvg desc. Retrieval limit defaults to 8.</p>
+    </div>
+
+    <!-- ============================================================ -->
+    <h2 id="SupabaseRpcStore">SupabaseRpcStore</h2>
+
+    <div class="level-vibe">
+      <div class="code-block">
+        <div class="code-block-header">
+          <div class="code-block-dots"><span></span><span></span><span></span></div>
+          <span class="code-block-title">usage</span>
+        </div>
+        <pre><span class="kw">import</span> { SupabaseRpcStore } <span class="kw">from</span> <span class="str">"@semantic-loop/core"</span>;
+<span class="kw">const</span> store <span class="op">=</span> <span class="kw">new</span> <span class="fn">SupabaseRpcStore</span>({
+  url: <span class="str">"https://your-project.supabase.co"</span>,
+  serviceRoleKey: <span class="str">"your-key"</span>,
+});</pre>
+      </div>
+    </div>
+
+    <div class="level-beginner">
+      <p>A <code>MemoryStore</code> backed by Supabase (PostgreSQL + pgvector). Durable, supports vector similarity search, and works from edge functions. See the <a href="supabase.html">Supabase guide</a> for setup.</p>
+    </div>
+
+    <div class="level-advanced">
+      <p>Options:</p>
+      <div class="code-block">
+        <div class="code-block-header">
+          <div class="code-block-dots"><span></span><span></span><span></span></div>
+          <span class="code-block-title">SupabaseRpcStoreOptions</span>
+        </div>
+        <pre><span class="kw">interface</span> <span class="ty">SupabaseRpcStoreOptions</span> {
+  <span class="kw">readonly</span> url: <span class="ty">string</span>;
+  <span class="kw">readonly</span> serviceRoleKey: <span class="ty">string</span>;
+  <span class="kw">readonly</span> itemsTable?: <span class="ty">string</span>;       <span class="cm">// "semantic_items"</span>
+  <span class="kw">readonly</span> aggregatesTable?: <span class="ty">string</span>;  <span class="cm">// "semantic_item_scores"</span>
+  <span class="kw">readonly</span> rpc?: <span class="ty">Partial</span>&lt;<span class="ty">SupabaseRpcNames</span>&gt;;
+  <span class="kw">readonly</span> fetcher?: <span class="kw">typeof</span> fetch;    <span class="cm">// injectable for testing</span>
+}</pre>
+      </div>
+      <p>All writes go through RPC functions for atomicity. <code>sl_apply_outcome</code> uses <code>SELECT ... FOR UPDATE</code> for row-level locking. The <code>fetcher</code> option lets you inject a mock fetch for testing without hitting Supabase.</p>
+    </div>
+
+    <!-- ============================================================ -->
+    <h2 id="HeuristicCritic">HeuristicCritic</h2>
+
+    <div class="level-vibe">
+      <div class="code-block">
+        <div class="code-block-header">
+          <div class="code-block-dots"><span></span><span></span><span></span></div>
+          <span class="code-block-title">usage</span>
+        </div>
+        <pre><span class="kw">import</span> { HeuristicCritic } <span class="kw">from</span> <span class="str">"@semantic-loop/core"</span>;
+<span class="kw">const</span> critic <span class="op">=</span> <span class="kw">new</span> <span class="fn">HeuristicCritic</span>();
+<span class="kw">const</span> critic2 <span class="op">=</span> <span class="kw">new</span> <span class="fn">HeuristicCritic</span>({
+  noveltyKeywords: [<span class="str">"why"</span>, <span class="str">"hidden"</span>, <span class="str">"counterintuitive"</span>],
+  penaltyKeywords: [<span class="str">"viral"</span>, <span class="str">"guaranteed"</span>],
+});</pre>
+      </div>
+    </div>
+
+    <div class="level-beginner">
+      <p>A critic that scores items using keyword matching. Novelty keywords boost the score, penalty keywords lower it. No API calls, runs instantly.</p>
+      <p>Default novelty keywords: "why", "mistake", "hidden", "counterintuitive", "framework", "moat", "compounding".</p>
+      <p>Default penalty keywords: "ultimate", "best ever", "guaranteed", "viral".</p>
+    </div>
+
+    <div class="level-advanced">
+      <p>Score formula: <code>0.2 + engagementBoost + noveltyBoost + historicalStability - penalty</code>, where:</p>
+      <ul>
+        <li><code>engagementBoost = engagementScore &times; 0.6</code></li>
+        <li><code>noveltyBoost = min(0.25, noveltyHits &times; 0.06)</code></li>
+        <li><code>penalty = min(0.2, penaltyHits &times; 0.05)</code></li>
+        <li><code>historicalStability = min(0.15, scoreAvg &times; 0.15)</code> (only when attempts &gt; 0)</li>
+      </ul>
+      <p>Tags emitted: <code>"novelty"</code> (has novelty hits), <code>"hype-risk"</code> (has penalty hits), <code>"validated"</code> (engagement &ge; 0.5), <code>"needs-more-data"</code> (engagement &lt; 0.5).</p>
+    </div>
+
+    <!-- ============================================================ -->
+    <h2 id="OpenAIEmbedding">OpenAIEmbedding</h2>
+
+    <div class="level-vibe">
+      <div class="code-block">
+        <div class="code-block-header">
+          <div class="code-block-dots"><span></span><span></span><span></span></div>
+          <span class="code-block-title">usage</span>
+        </div>
+        <pre><span class="kw">import</span> { OpenAIEmbedding } <span class="kw">from</span> <span class="str">"@semantic-loop/core"</span>;
+<span class="kw">const</span> embedder <span class="op">=</span> <span class="kw">new</span> <span class="fn">OpenAIEmbedding</span>({ apiKey: <span class="str">"sk-..."</span> });
+<span class="kw">const</span> embedder2 <span class="op">=</span> <span class="kw">new</span> <span class="fn">OpenAIEmbedding</span>({
+  apiKey: <span class="str">"sk-..."</span>,
+  model: <span class="str">"text-embedding-3-small"</span>,
+  dimensions: <span class="num">1536</span>,
+  baseUrl: <span class="str">"https://api.openai.com/v1"</span>,
+});</pre>
+      </div>
+    </div>
+
+    <div class="level-beginner">
+      <p>Generates embeddings using OpenAI's API. Supports both single and batch embedding. Defaults to <code>text-embedding-3-small</code> with 1536 dimensions.</p>
+    </div>
+
+    <div class="level-advanced">
+      <p>The <code>baseUrl</code> option supports Azure OpenAI, proxy endpoints, and compatible APIs. The <code>embedBatch()</code> method sends all texts in a single API call and sorts results by index to maintain order. Throws on non-OK responses with the HTTP status code.</p>
+    </div>
+
+  </main>
+</div>
+
+<!-- Footer -->
+<footer>
+  <div class="container">
+    <div class="footer-left">
+      <a href="../">moatkit</a> &mdash; AGPL-3.0
+    </div>
+    <ul class="footer-links">
+      <li><a href="https://github.com/cemphlvn/semantic-loop" target="_blank" rel="noopener">GitHub</a></li>
+      <li><a href="../llms.txt">llms.txt</a></li>
+      <li><a href="../llms-full.txt">llms-full.txt</a></li>
+      <li><a href="https://jsr.io/@semantic-loop/core" target="_blank" rel="noopener">JSR</a></li>
+    </ul>
+  </div>
+</footer>
+
+<script>
+(function () {
+  var STORAGE_KEY = "sl-doc-level";
+  var tabs = document.querySelectorAll(".level-tab");
+  var body = document.body;
+  var saved = localStorage.getItem(STORAGE_KEY) || "vibe";
+
+  function setLevel(level) {
+    body.className = body.className.replace(/\bshow-\w+\b/g, "").replace(/\blevel-active\b/g, "").trim();
+    body.classList.add("level-active", "show-" + level);
+    tabs.forEach(function (t) {
+      t.classList.toggle("active", t.getAttribute("data-level") === level);
+    });
+    try { localStorage.setItem(STORAGE_KEY, level); } catch (e) {}
+  }
+
+  tabs.forEach(function (tab) {
+    tab.addEventListener("click", function () {
+      setLevel(this.getAttribute("data-level"));
+    });
+  });
+
+  setLevel(saved);
+})();
+</script>
+
+</body>
+</html>

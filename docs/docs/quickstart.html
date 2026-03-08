@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quickstart &mdash; semantic-loop</title>
+  <meta name="description" content="Get started with semantic-loop in five minutes. Install, seed items, select, ingest outcomes, and watch the loop learn.">
+  <link rel="stylesheet" href="../global.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<!-- Nav -->
+<nav>
+  <div class="container">
+    <a href="../" class="nav-logo">moat<span>kit</span></a>
+    <ul class="nav-links">
+      <li><a href="quickstart.html" class="active">Quickstart</a></li>
+      <li><a href="api.html">API</a></li>
+      <li><a href="supabase.html">Supabase</a></li>
+      <li>
+        <a href="https://github.com/cemphlvn/semantic-loop" class="nav-github" target="_blank" rel="noopener">
+          <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path></svg>
+          GitHub
+        </a>
+      </li>
+    </ul>
+  </div>
+</nav>
+
+<!-- Level Tabs -->
+<div class="level-tabs">
+  <div class="container">
+    <button class="level-tab active" data-level="vibe">Vibe Coder<span class="level-tab-desc"> &mdash; just code</span></button>
+    <button class="level-tab" data-level="beginner">Beginner<span class="level-tab-desc"> &mdash; explain everything</span></button>
+    <button class="level-tab" data-level="advanced">Advanced<span class="level-tab-desc"> &mdash; internals &amp; tradeoffs</span></button>
+  </div>
+</div>
+
+<div class="docs-layout">
+
+  <!-- Sidebar -->
+  <aside class="docs-sidebar">
+    <div class="sidebar-heading">Quickstart</div>
+    <ul>
+      <li><a href="#install">Install</a></li>
+      <li><a href="#first-loop">First loop</a></li>
+      <li><a href="#add-supabase">Add Supabase</a></li>
+      <li><a href="#add-openai">Add OpenAI embeddings</a></li>
+      <li><a href="#full-cycle">Full loop cycle</a></li>
+    </ul>
+    <div class="sidebar-heading">Pages</div>
+    <ul>
+      <li><a href="quickstart.html" class="active">Quickstart</a></li>
+      <li><a href="api.html">API Reference</a></li>
+      <li><a href="supabase.html">Supabase Guide</a></li>
+    </ul>
+  </aside>
+
+  <!-- Content -->
+  <main class="docs-content">
+
+    <div class="docs-breadcrumb">
+      <a href="../">moatkit</a>
+      <span class="sep">/</span>
+      <span>Quickstart</span>
+    </div>
+
+    <h1>Quickstart</h1>
+    <p class="lead">From zero to a self-improving retrieval loop in five minutes.</p>
+
+    <!-- ============================================================ -->
+    <h2 id="install">Install</h2>
+
+    <!-- VIBE -->
+    <div class="level-vibe">
+      <div class="code-block">
+        <div class="code-block-header">
+          <div class="code-block-dots"><span></span><span></span><span></span></div>
+          <span class="code-block-title">terminal</span>
+        </div>
+        <pre>deno add jsr:@semantic-loop/core</pre>
+      </div>
+    </div>
+
+    <!-- BEGINNER -->
+    <div class="level-beginner">
+      <p>semantic-loop runs on <strong>Deno</strong>, a modern TypeScript runtime. If you don't have Deno installed yet:</p>
+      <div class="code-block">
+        <div class="code-block-header">
+          <div class="code-block-dots"><span></span><span></span><span></span></div>
+          <span class="code-block-title">install deno (macOS / Linux)</span>
+        </div>
+        <pre>curl -fsSL https://deno.land/install.sh | sh</pre>
+      </div>
+      <p>Then add the library to your project:</p>
+      <div class="code-block">
+        <div class="code-block-header">
+          <div class="code-block-dots"><span></span><span></span><span></span></div>
+          <span class="code-block-title">add the package</span>
+        </div>
+        <pre>deno add jsr:@semantic-loop/core</pre>
+      </div>
+      <p>This adds <code>@semantic-loop/core</code> to your <code>deno.json</code> import map. You can now import from it in any <code>.ts</code> file.</p>
+    </div>
+
+    <!-- ADVANCED -->
+    <div class="level-advanced">
+      <div class="code-block">
+        <div class="code-block-header">
+          <div class="code-block-dots"><span></span><span></span><span></span></div>
+          <span class="code-block-title">terminal</span>
+        </div>
+        <pre>deno add jsr:@semantic-loop/core</pre>
+      </div>
+      <p>The package ships as ESM on <a href="https://jsr.io/@semantic-loop/core" target="_blank" rel="noopener">JSR</a>. It uses only web-standard APIs (<code>fetch</code>, <code>crypto.subtle</code>, <code>Request</code>/<code>Response</code>), so it runs on Deno Deploy, Cloudflare Workers, or any edge runtime that supports these.</p>
+      <p>No Node.js polyfills needed. No build step. The barrel export is <code>mod.ts</code>.</p>
+    </div>
+
+    <!-- ============================================================ -->
+    <h2 id="first-loop">First loop (in-memory)</h2>
+
+    <!-- VIBE -->
+    <div class="level-vibe">
+      <div class="code-block">
+        <div class="code-block-header">
+          <div class="code-block-dots"><span></span><span></span><span></span></div>
+          <span class="code-block-title">quickstart.ts</span>
+        </div>
+        <pre><span class="kw">import</span> { createLoop } <span class="kw">from</span> <span class="str">"@semantic-loop/core"</span>;
+
+<span class="cm">// in-memory store, no external services</span>
+<span class="kw">const</span> loop <span class="op">=</span> <span class="fn">createLoop</span>({ store: <span class="str">"memory"</span> });
+
+<span class="cm">// seed content</span>
+<span class="kw">await</span> loop.<span class="fn">seed</span>([
+  { content: <span class="str">"The moat is the loop that compounds after every post."</span>, tribe: <span class="str">"founders"</span>, kind: <span class="str">"hook"</span> },
+  { content: <span class="str">"Generic productivity advice."</span>, tribe: <span class="str">"founders"</span>, kind: <span class="str">"hook"</span> },
+  { content: <span class="str">"Why most founders build features when they should build feedback loops."</span>, tribe: <span class="str">"founders"</span>, kind: <span class="str">"hook"</span> },
+]);
+
+<span class="cm">// select best candidate</span>
+<span class="kw">const</span> pick <span class="op">=</span> <span class="kw">await</span> loop.<span class="fn">select</span>(<span class="kw">undefined</span>, { tribe: <span class="str">"founders"</span> });
+console.<span class="fn">log</span>(pick.candidate.item.content);
+
+<span class="cm">// feed back real-world outcome</span>
+<span class="kw">const</span> result <span class="op">=</span> <span class="kw">await</span> loop.<span class="fn">ingest</span>(pick.candidate.item.id, <span class="str">"instagram"</span>, {
+  views: <span class="num">12400</span>, likes: <span class="num">340</span>, comments: <span class="num">45</span>, shares: <span class="num">89</span>,
+});
+console.<span class="fn">log</span>(result.finalScore);
+
+<span class="cm">// select again — now informed by the outcome</span>
+<span class="kw">const</span> next <span class="op">=</span> <span class="kw">await</span> loop.<span class="fn">select</span>(<span class="kw">undefined</span>, { tribe: <span class="str">"founders"</span> });</pre>
+      </div>
+      <div class="code-block">
+        <div class="code-block-header">
+          <div class="code-block-dots"><span></span><span></span><span></span></div>
+          <span class="code-block-title">run it</span>
+        </div>
+        <pre>deno run quickstart.ts</pre>
+      </div>
+    </div>
+
+    <!-- BEGINNER -->
+    <div class="level-beginner">
+      <p>Let's build a self-improving system from scratch. No database, no API keys, no setup. Everything runs in memory.</p>
+
+      <h3>What is a "loop"?</h3>
+      <p>A loop is a system that learns from its own output. You give it content, it picks the best item for a situation, the real world tells you how it did, and the next pick is smarter. Repeat forever.</p>
+
+      <h3>Step 1: Create the loop</h3>
+      <div class="code-block">
+        <div class="code-block-header">
+          <div class="code-block-dots"><span></span><span></span><span></span></div>
+          <span class="code-block-title">quickstart.ts</span>
+        </div>
+        <pre><span class="kw">import</span> { createLoop } <span class="kw">from</span> <span class="str">"@semantic-loop/core"</span>;
+
+<span class="cm">// "memory" means everything is stored in JavaScript Maps</span>
+<span class="cm">// — great for learning, no external services needed</span>
+<span class="kw">const</span> loop <span class="op">=</span> <span class="fn">createLoop</span>({ store: <span class="str">"memory"</span> });</pre>
+      </div>
+      <p><code>createLoop()</code> is the main entry point. It wires up a store (where items live), an embedding provider (optional — turns text into vectors for similarity search), and a critic (scores items after outcomes).</p>
+
+      <h3>Step 2: Seed content</h3>
+      <div class="code-block">
+        <div class="code-block-header">
+          <div class="code-block-dots"><span></span><span></span><span></span></div>
+          <span class="code-block-title">seed items</span>
+        </div>
+        <pre><span class="kw">await</span> loop.<span class="fn">seed</span>([
+  {
+    content: <span class="str">"The moat is the loop that compounds after every post."</span>,
+    tribe: <span class="str">"founders"</span>,    <span class="cm">// audience segment</span>
+    kind: <span class="str">"hook"</span>,        <span class="cm">// content type</span>
+  },
+  {
+    content: <span class="str">"Generic productivity advice."</span>,
+    tribe: <span class="str">"founders"</span>,
+    kind: <span class="str">"hook"</span>,
+  },
+  {
+    content: <span class="str">"Why most founders build features when they should build feedback loops."</span>,
+    tribe: <span class="str">"founders"</span>,
+    kind: <span class="str">"hook"</span>,
+  },
+]);</pre>
+      </div>
+      <p><strong>tribe</strong> is an audience segment — you can have "founders", "designers", "developers", etc. <strong>kind</strong> is the content type — "hook", "prompt", "headline", whatever you're optimizing.</p>
+      <p>IDs and timestamps are generated automatically. If you provide embeddings (vectors), they're stored. If not, the system uses the configured embedding provider (or none, in this case).</p>
+
+      <h3>Step 3: Select</h3>
+      <div class="code-block">
+        <div class="code-block-header">
+          <div class="code-block-dots"><span></span><span></span><span></span></div>
+          <span class="code-block-title">pick the best item</span>
+        </div>
+        <pre><span class="kw">const</span> pick <span class="op">=</span> <span class="kw">await</span> loop.<span class="fn">select</span>(<span class="kw">undefined</span>, { tribe: <span class="str">"founders"</span> });
+
+console.<span class="fn">log</span>(pick.candidate.item.content);
+<span class="cm">// → one of the three items above</span>
+
+console.<span class="fn">log</span>(pick.strategy);
+<span class="cm">// → "greedy" (best score) or "explore" (random from top pool)</span></pre>
+      </div>
+      <p>The first argument to <code>select()</code> is a query string (used for semantic similarity when you have embeddings). We pass <code>undefined</code> here because we don't have embeddings yet.</p>
+      <p>The second argument filters by tribe, kind, etc. The engine uses an <strong>epsilon-greedy</strong> strategy: most of the time it picks the best item, but sometimes it explores to discover hidden gems.</p>
+
+      <h3>Step 4: Ingest an outcome</h3>
+      <div class="code-block">
+        <div class="code-block-header">
+          <div class="code-block-dots"><span></span><span></span><span></span></div>
+          <span class="code-block-title">feed back results</span>
+        </div>
+        <pre><span class="kw">const</span> result <span class="op">=</span> <span class="kw">await</span> loop.<span class="fn">ingest</span>(pick.candidate.item.id, <span class="str">"instagram"</span>, {
+  views: <span class="num">12400</span>,
+  likes: <span class="num">340</span>,
+  comments: <span class="num">45</span>,
+  shares: <span class="num">89</span>,
+  saves: <span class="num">214</span>,
+  avgWatchSeconds: <span class="num">18</span>,
+});
+
+console.<span class="fn">log</span>(result.finalScore);       <span class="cm">// 0.341</span>
+console.<span class="fn">log</span>(result.critic.rationale);  <span class="cm">// why the critic scored it this way</span>
+console.<span class="fn">log</span>(result.critic.tags);       <span class="cm">// ["novelty", "validated"]</span></pre>
+      </div>
+      <p><code>ingest()</code> takes an item ID, a platform name (for tracking where outcomes come from), and engagement metrics. It automatically derives an engagement score, runs the critic, and updates the item's aggregate scores.</p>
+
+      <h3>Step 5: Select again</h3>
+      <div class="code-block">
+        <div class="code-block-header">
+          <div class="code-block-dots"><span></span><span></span><span></span></div>
+          <span class="code-block-title">the loop learns</span>
+        </div>
+        <pre><span class="kw">const</span> next <span class="op">=</span> <span class="kw">await</span> loop.<span class="fn">select</span>(<span class="kw">undefined</span>, { tribe: <span class="str">"founders"</span> });
+<span class="cm">// → now informed by the outcome — picks what performed</span></pre>
+      </div>
+      <p>The second <code>select()</code> knows about the first outcome. Items that performed well get higher scores. Items that were never tested get an exploration bonus. This is the compounding loop.</p>
+    </div>
+
+    <!-- ADVANCED -->
+    <div class="level-advanced">
+      <p>The in-memory setup uses <code>InMemoryStore</code>, <code>NoopEmbedding</code> (0-dimensional, no vectors), and <code>HeuristicCritic</code> (keyword-based scoring). No network calls.</p>
+      <div class="code-block">
+        <div class="code-block-header">
+          <div class="code-block-dots"><span></span><span></span><span></span></div>
+          <span class="code-block-title">quickstart.ts</span>
+        </div>
+        <pre><span class="kw">import</span> { createLoop } <span class="kw">from</span> <span class="str">"@semantic-loop/core"</span>;
+
+<span class="kw">const</span> loop <span class="op">=</span> <span class="fn">createLoop</span>({ store: <span class="str">"memory"</span> });
+
+<span class="kw">await</span> loop.<span class="fn">seed</span>([
+  { content: <span class="str">"The moat is the loop that compounds after every post."</span>, tribe: <span class="str">"founders"</span>, kind: <span class="str">"hook"</span> },
+  { content: <span class="str">"Generic productivity advice."</span>, tribe: <span class="str">"founders"</span>, kind: <span class="str">"hook"</span> },
+  { content: <span class="str">"Why most founders build features when they should build feedback loops."</span>, tribe: <span class="str">"founders"</span>, kind: <span class="str">"hook"</span> },
+]);
+
+<span class="kw">const</span> pick <span class="op">=</span> <span class="kw">await</span> loop.<span class="fn">select</span>(<span class="kw">undefined</span>, { tribe: <span class="str">"founders"</span> });
+
+<span class="kw">const</span> result <span class="op">=</span> <span class="kw">await</span> loop.<span class="fn">ingest</span>(pick.candidate.item.id, <span class="str">"instagram"</span>, {
+  views: <span class="num">12400</span>, likes: <span class="num">340</span>, comments: <span class="num">45</span>, shares: <span class="num">89</span>, saves: <span class="num">214</span>, avgWatchSeconds: <span class="num">18</span>,
+});
+
+<span class="kw">const</span> next <span class="op">=</span> <span class="kw">await</span> loop.<span class="fn">select</span>(<span class="kw">undefined</span>, { tribe: <span class="str">"founders"</span> });</pre>
+      </div>
+
+      <h3>What happens under the hood</h3>
+      <p>Without embeddings, <code>InMemoryStore.retrieve()</code> assigns a default similarity of <code>0.5</code> to all candidates. Selection then depends on the remaining three weighted dimensions:</p>
+      <ul>
+        <li><strong>scoreAvg</strong> (weight 0.35) &mdash; running average of final scores from past outcomes</li>
+        <li><strong>exploration</strong> (weight 0.15) &mdash; <code>1 / (attempts + 1)</code>, favoring untested items</li>
+        <li><strong>freshness</strong> (weight 0.05) &mdash; exponential decay from last outcome, 168h half-life</li>
+      </ul>
+      <p>On the first <code>select()</code>, all items are tied (0 attempts, 0 scores, equal similarity). Epsilon-greedy with <code>&epsilon; = 0.18</code> means there's an 18% chance of random exploration from the top-k pool (default k=3).</p>
+      <p>After <code>ingest()</code>, the selected item has 1 attempt and a non-zero <code>scoreAvg</code>. The <code>HeuristicCritic</code> checks for novelty keywords ("why", "mistake", "hidden", "counterintuitive", "framework", "moat", "compounding") and penalty keywords ("ultimate", "best ever", "guaranteed", "viral"). The final score combines critic and engagement: <code>criticScore &times; 0.6 + engagementScore &times; 0.4</code>.</p>
+      <p>Engagement derivation for this example:</p>
+      <div class="code-block">
+        <div class="code-block-header">
+          <div class="code-block-dots"><span></span><span></span><span></span></div>
+          <span class="code-block-title">engagement math</span>
+        </div>
+        <pre><span class="cm">// interactionRate = (340 + 45*2 + 89*3 + 214*2 + 0*2 + 0*4) / 12400</span>
+<span class="cm">//                = (340 + 90 + 267 + 428) / 12400 = 1125 / 12400 = 0.0907</span>
+<span class="cm">// watchSignal    = clamp(18 / 30) = 0.6</span>
+<span class="cm">// engagementScore = 0.0907 * 0.7 + 0.6 * 0.3 = 0.0635 + 0.18 = 0.2435</span></pre>
+      </div>
+      <div class="note"><strong>Note:</strong> The <code>InMemoryStore</code> is not durable. Scores and items are lost when the process exits. For persistence, use <code>SupabaseRpcStore</code>.</div>
+    </div>
+
+    <!-- ============================================================ -->
+    <h2 id="add-supabase">Add Supabase</h2>
+
+    <!-- VIBE -->
+    <div class="level-vibe">
+      <div class="code-block">
+        <div class="code-block-header">
+          <div class="code-block-dots"><span></span><span></span><span></span></div>
+          <span class="code-block-title">.env</span>
+        </div>
+        <pre>SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=your-key</pre>
+      </div>
+      <div class="code-block">
+        <div class="code-block-header">
+          <div class="code-block-dots"><span></span><span></span><span></span></div>
+          <span class="code-block-title">run sql/001_init.sql in Supabase SQL Editor</span>
+        </div>
+        <pre><span class="cm">-- creates: semantic_items, semantic_item_scores, semantic_outcomes</span>
+<span class="cm">-- creates: sl_upsert_item, sl_match_items, sl_record_outcome, sl_apply_outcome</span>
+<span class="cm">-- see docs/supabase.html for the full migration</span></pre>
+      </div>
+      <div class="code-block">
+        <div class="code-block-header">
+          <div class="code-block-dots"><span></span><span></span><span></span></div>
+          <span class="code-block-title">switch to supabase</span>
+        </div>
+        <pre><span class="kw">const</span> loop <span class="op">=</span> <span class="fn">createLoop</span>({ store: <span class="str">"supabase"</span> });</pre>
+      </div>
+    </div>
+
+    <!-- BEGINNER -->
+    <div class="level-beginner">
+      <p>Supabase is a hosted PostgreSQL database with a REST API. It's free to start and handles everything semantic-loop needs: storing items, vector search, and aggregate updates.</p>
+
+      <h3>Step 1: Create a Supabase project</h3>
+      <p>Go to <a href="https://supabase.com" target="_blank" rel="noopener">supabase.com</a> and create a new project. Note your project URL and service role key from Settings &gt; API.</p>
+
+      <h3>Step 2: Run the migration</h3>
+      <p>Open the SQL Editor in your Supabase dashboard and paste the contents of <code>sql/001_init.sql</code>. This creates three tables and four RPC functions. See the <a href="supabase.html">Supabase guide</a> for the full migration with line-by-line explanation.</p>
+
+      <h3>Step 3: Set environment variables</h3>
+      <div class="code-block">
+        <div class="code-block-header">
+          <div class="code-block-dots"><span></span><span></span><span></span></div>
+          <span class="code-block-title">.env</span>
+        </div>
+        <pre>SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=your-key</pre>
+      </div>
+
+      <h3>Step 4: Change one line</h3>
+      <div class="code-block">
+        <div class="code-block-header">
+          <div class="code-block-dots"><span></span><span></span><span></span></div>
+          <span class="code-block-title">just change "memory" to "supabase"</span>
+        </div>
+        <pre><span class="cm">// Before</span>
+<span class="kw">const</span> loop <span class="op">=</span> <span class="fn">createLoop</span>({ store: <span class="str">"memory"</span> });
+
+<span class="cm">// After</span>
+<span class="kw">const</span> loop <span class="op">=</span> <span class="fn">createLoop</span>({ store: <span class="str">"supabase"</span> });</pre>
+      </div>
+      <p>When you pass the string <code>"supabase"</code>, the library reads <code>SUPABASE_URL</code> and <code>SUPABASE_SERVICE_ROLE_KEY</code> from environment variables automatically.</p>
+    </div>
+
+    <!-- ADVANCED -->
+    <div class="level-advanced">
+      <p>The <code>"supabase"</code> shorthand reads env vars. For explicit control:</p>
+      <div class="code-block">
+        <div class="code-block-header">
+          <div class="code-block-dots"><span></span><span></span><span></span></div>
+          <span class="code-block-title">explicit config</span>
+        </div>
+        <pre><span class="kw">const</span> loop <span class="op">=</span> <span class="fn">createLoop</span>({
+  store: {
+    provider: <span class="str">"supabase"</span>,
+    url: Deno.env.<span class="fn">get</span>(<span class="str">"SUPABASE_URL"</span>)<span class="op">!</span>,
+    serviceRoleKey: Deno.env.<span class="fn">get</span>(<span class="str">"SUPABASE_SERVICE_ROLE_KEY"</span>)<span class="op">!</span>,
+  },
+});</pre>
+      </div>
+      <p>Or pass a raw <code>SupabaseRpcStore</code> instance for full control over table names, RPC function names, and the fetch implementation:</p>
+      <div class="code-block">
+        <div class="code-block-header">
+          <div class="code-block-dots"><span></span><span></span><span></span></div>
+          <span class="code-block-title">raw instance</span>
+        </div>
+        <pre><span class="kw">import</span> { createLoop, SupabaseRpcStore } <span class="kw">from</span> <span class="str">"@semantic-loop/core"</span>;
+
+<span class="kw">const</span> store <span class="op">=</span> <span class="kw">new</span> <span class="fn">SupabaseRpcStore</span>({
+  url: <span class="str">"https://your-project.supabase.co"</span>,
+  serviceRoleKey: <span class="str">"your-key"</span>,
+  itemsTable: <span class="str">"semantic_items"</span>,       <span class="cm">// default</span>
+  aggregatesTable: <span class="str">"semantic_item_scores"</span>, <span class="cm">// default</span>
+  rpc: {
+    upsertItem: <span class="str">"sl_upsert_item"</span>,       <span class="cm">// default</span>
+    matchItems: <span class="str">"sl_match_items"</span>,       <span class="cm">// default</span>
+    recordOutcome: <span class="str">"sl_record_outcome"</span>, <span class="cm">// default</span>
+    applyOutcome: <span class="str">"sl_apply_outcome"</span>,   <span class="cm">// default</span>
+  },
+});
+
+<span class="kw">const</span> loop <span class="op">=</span> <span class="fn">createLoop</span>({ store });</pre>
+      </div>
+      <p>The <code>SupabaseRpcStore</code> communicates via Supabase's PostgREST API. All writes go through RPC functions (<code>sl_*</code>) for atomicity. Reads use direct REST queries. The store implements the <code>MemoryStore</code> interface, so you can swap it for any custom backend.</p>
+    </div>
+
+    <!-- ============================================================ -->
+    <h2 id="add-openai">Add OpenAI embeddings</h2>
+
+    <!-- VIBE -->
+    <div class="level-vibe">
+      <div class="code-block">
+        <div class="code-block-header">
+          <div class="code-block-dots"><span></span><span></span><span></span></div>
+          <span class="code-block-title">.env</span>
+        </div>
+        <pre>OPENAI_API_KEY=sk-...</pre>
+      </div>
+      <div class="code-block">
+        <div class="code-block-header">
+          <div class="code-block-dots"><span></span><span></span><span></span></div>
+          <span class="code-block-title">add embedding</span>
+        </div>
+        <pre><span class="kw">const</span> loop <span class="op">=</span> <span class="fn">createLoop</span>({
+  store: <span class="str">"supabase"</span>,
+  embedding: <span class="str">"openai"</span>,
+});</pre>
+      </div>
+    </div>
+
+    <!-- BEGINNER -->
+    <div class="level-beginner">
+      <p><strong>Embeddings</strong> turn text into numbers (vectors). When you search for "growth strategies", the system can find items about compounding and moats because they're close together in vector space, even if they don't share the same words.</p>
+      <p>Without embeddings, every item gets the same similarity score. With embeddings, <code>select("growth strategies")</code> returns items semantically related to that query.</p>
+
+      <h3>Step 1: Get an OpenAI API key</h3>
+      <p>Sign up at <a href="https://platform.openai.com" target="_blank" rel="noopener">platform.openai.com</a> and create an API key.</p>
+
+      <h3>Step 2: Set the env var</h3>
+      <div class="code-block">
+        <div class="code-block-header">
+          <div class="code-block-dots"><span></span><span></span><span></span></div>
+          <span class="code-block-title">.env</span>
+        </div>
+        <pre>OPENAI_API_KEY=sk-...</pre>
+      </div>
+
+      <h3>Step 3: Add to config</h3>
+      <div class="code-block">
+        <div class="code-block-header">
+          <div class="code-block-dots"><span></span><span></span><span></span></div>
+          <span class="code-block-title">enable embeddings</span>
+        </div>
+        <pre><span class="kw">const</span> loop <span class="op">=</span> <span class="fn">createLoop</span>({
+  store: <span class="str">"supabase"</span>,
+  embedding: <span class="str">"openai"</span>,  <span class="cm">// reads OPENAI_API_KEY from env</span>
+});</pre>
+      </div>
+      <p>Now when you call <code>loop.seed()</code>, embeddings are generated automatically for each item. When you call <code>loop.select("growth strategies")</code>, the query is embedded and compared to all items via cosine similarity.</p>
+    </div>
+
+    <!-- ADVANCED -->
+    <div class="level-advanced">
+      <p>The <code>"openai"</code> shorthand uses <code>text-embedding-3-small</code> with 1536 dimensions. For explicit control:</p>
+      <div class="code-block">
+        <div class="code-block-header">
+          <div class="code-block-dots"><span></span><span></span><span></span></div>
+          <span class="code-block-title">explicit embedding config</span>
+        </div>
+        <pre><span class="kw">const</span> loop <span class="op">=</span> <span class="fn">createLoop</span>({
+  store: <span class="str">"supabase"</span>,
+  embedding: {
+    provider: <span class="str">"openai"</span>,
+    apiKey: Deno.env.<span class="fn">get</span>(<span class="str">"OPENAI_API_KEY"</span>)<span class="op">!</span>,
+    model: <span class="str">"text-embedding-3-small"</span>,  <span class="cm">// default</span>
+    dimensions: <span class="num">1536</span>,                 <span class="cm">// default — match your pgvector column</span>
+    baseUrl: <span class="str">"https://api.openai.com/v1"</span>, <span class="cm">// default — change for Azure, proxies</span>
+  },
+});</pre>
+      </div>
+      <p>The <code>EmbeddingProvider</code> interface has two methods:</p>
+      <ul>
+        <li><code>embed(text: string): Promise&lt;EmbeddingVector&gt;</code> &mdash; single text to vector</li>
+        <li><code>embedBatch?(texts: readonly string[]): Promise&lt;readonly EmbeddingVector[]&gt;</code> &mdash; optional batch API, used by <code>seed()</code></li>
+      </ul>
+      <p>If <code>embedBatch</code> is defined, <code>seed()</code> calls it once for all items that lack pre-computed embeddings, reducing API calls. The <code>OpenAIEmbedding</code> class implements both.</p>
+      <p>You can also pass any object implementing <code>EmbeddingProvider</code> directly for custom embedding backends (Cohere, local models, etc.).</p>
+      <div class="note"><strong>Dimension mismatch:</strong> If your embedding model outputs a different dimensionality than 1536, update the <code>vector(1536)</code> column definition in the SQL migration to match.</div>
+    </div>
+
+    <!-- ============================================================ -->
+    <h2 id="full-cycle">Full loop cycle</h2>
+
+    <!-- VIBE -->
+    <div class="level-vibe">
+      <div class="code-block">
+        <div class="code-block-header">
+          <div class="code-block-dots"><span></span><span></span><span></span></div>
+          <span class="code-block-title">production loop</span>
+        </div>
+        <pre><span class="kw">import</span> { createLoop } <span class="kw">from</span> <span class="str">"@semantic-loop/core"</span>;
+
+<span class="kw">const</span> loop <span class="op">=</span> <span class="fn">createLoop</span>({
+  store: <span class="str">"supabase"</span>,
+  embedding: <span class="str">"openai"</span>,
+  selection: { epsilon: <span class="num">0.2</span> },
+  aggregation: { decayFactor: <span class="num">0.9</span> },
+});
+
+<span class="cm">// seed</span>
+<span class="kw">await</span> loop.<span class="fn">seed</span>([
+  { content: <span class="str">"The moat is the loop that compounds."</span>, tribe: <span class="str">"founders"</span> },
+  { content: <span class="str">"Ship fast, learn faster."</span>, tribe: <span class="str">"founders"</span> },
+]);
+
+<span class="cm">// select with semantic query</span>
+<span class="kw">const</span> pick <span class="op">=</span> <span class="kw">await</span> loop.<span class="fn">select</span>(<span class="str">"compounding growth strategies"</span>, {
+  tribe: <span class="str">"founders"</span>,
+});
+
+<span class="cm">// publish pick.candidate.item.content to your platform...</span>
+
+<span class="cm">// later: ingest the outcome</span>
+<span class="kw">await</span> loop.<span class="fn">ingest</span>(pick.candidate.item.id, <span class="str">"twitter"</span>, {
+  views: <span class="num">8500</span>, likes: <span class="num">120</span>, shares: <span class="num">34</span>, clicks: <span class="num">210</span>,
+});</pre>
+      </div>
+    </div>
+
+    <!-- BEGINNER -->
+    <div class="level-beginner">
+      <p>Here's the full picture: Supabase for persistence, OpenAI for semantic search, and tuning options to control how the loop learns.</p>
+      <div class="code-block">
+        <div class="code-block-header">
+          <div class="code-block-dots"><span></span><span></span><span></span></div>
+          <span class="code-block-title">the complete setup</span>
+        </div>
+        <pre><span class="kw">import</span> { createLoop } <span class="kw">from</span> <span class="str">"@semantic-loop/core"</span>;
+
+<span class="kw">const</span> loop <span class="op">=</span> <span class="fn">createLoop</span>({
+  store: <span class="str">"supabase"</span>,       <span class="cm">// durable storage with vector search</span>
+  embedding: <span class="str">"openai"</span>,     <span class="cm">// semantic similarity</span>
+  selection: {
+    epsilon: <span class="num">0.2</span>,         <span class="cm">// 20% chance of exploring instead of exploiting</span>
+  },
+  aggregation: {
+    decayFactor: <span class="num">0.9</span>,     <span class="cm">// recent outcomes matter more</span>
+  },
+});
+
+<span class="cm">// 1. Seed content with automatic embedding generation</span>
+<span class="kw">await</span> loop.<span class="fn">seed</span>([
+  { content: <span class="str">"The moat is the loop that compounds."</span>, tribe: <span class="str">"founders"</span> },
+  { content: <span class="str">"Ship fast, learn faster."</span>, tribe: <span class="str">"founders"</span> },
+]);
+
+<span class="cm">// 2. Select using semantic query — "compounding growth" matches "loop that compounds"</span>
+<span class="kw">const</span> pick <span class="op">=</span> <span class="kw">await</span> loop.<span class="fn">select</span>(<span class="str">"compounding growth strategies"</span>, {
+  tribe: <span class="str">"founders"</span>,
+});
+
+<span class="cm">// 3. Use the content in your app, post it, send it...</span>
+console.<span class="fn">log</span>(pick.candidate.item.content);
+
+<span class="cm">// 4. Later, when you have metrics, feed them back</span>
+<span class="kw">const</span> result <span class="op">=</span> <span class="kw">await</span> loop.<span class="fn">ingest</span>(pick.candidate.item.id, <span class="str">"twitter"</span>, {
+  views: <span class="num">8500</span>,
+  likes: <span class="num">120</span>,
+  shares: <span class="num">34</span>,
+  clicks: <span class="num">210</span>,
+});
+
+<span class="cm">// 5. Next select() is smarter. The loop compounds.</span></pre>
+      </div>
+      <p>That's it. Seed content, select the best, observe what happens, feed it back. The system gets smarter with every cycle.</p>
+    </div>
+
+    <!-- ADVANCED -->
+    <div class="level-advanced">
+      <p>The full production cycle involves three method calls that correspond to the engine's internal pipeline:</p>
+      <div class="code-block">
+        <div class="code-block-header">
+          <div class="code-block-dots"><span></span><span></span><span></span></div>
+          <span class="code-block-title">what happens internally</span>
+        </div>
+        <pre><span class="cm">// seed() → for each item:</span>
+<span class="cm">//   1. embedder.embed(content) or embedder.embedBatch(contents)</span>
+<span class="cm">//   2. buildItem(input, embedding) → SemanticItem</span>
+<span class="cm">//   3. engine.seed(items) → store.upsertItem(item) for each</span>
+
+<span class="cm">// select(query, opts) →</span>
+<span class="cm">//   1. embedder.embed(query) → queryVector</span>
+<span class="cm">//   2. engine.selectNext({ queryVector, tribe, ... })</span>
+<span class="cm">//     → store.retrieve(request) → candidates[]</span>
+<span class="cm">//     → computeWeightedScore(candidate, config, now) for each</span>
+<span class="cm">//     → sort by weighted score</span>
+<span class="cm">//     → epsilon-greedy: random() &lt; epsilon ? pick from top-k : pick best</span>
+
+<span class="cm">// ingest(itemId, platform, metrics) →</span>
+<span class="cm">//   1. deriveEngagementScore(metrics) → engagementScore</span>
+<span class="cm">//   2. engine.ingestOutcome(outcome)</span>
+<span class="cm">//     → store.getItem(itemId)</span>
+<span class="cm">//     → store.getAggregate(itemId)</span>
+<span class="cm">//     → critic.score({ item, aggregateBefore, outcome }) → CriticResult</span>
+<span class="cm">//     → finalScore = criticScore * 0.6 + engagementScore * 0.4</span>
+<span class="cm">//     → store.appendOutcome(outcome, critic, finalScore)</span>
+<span class="cm">//     → store.updateAggregate(update, config) → new AggregateState</span></pre>
+      </div>
+      <p>The <code>SemanticLoop</code> wrapper returned by <code>createLoop()</code> exposes <code>loop.engine</code> (the raw <code>SemanticLoopEngine</code>), <code>loop.embedder</code>, and <code>loop.store</code> for direct access when you need to bypass the high-level API.</p>
+      <p>Tuning parameters to experiment with:</p>
+      <table>
+        <thead>
+          <tr>
+            <th>Parameter</th>
+            <th>Default</th>
+            <th>Effect</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>selection.epsilon</code></td>
+            <td><code>0.18</code></td>
+            <td>Higher = more exploration, slower convergence</td>
+          </tr>
+          <tr>
+            <td><code>selection.topKExplorationPool</code></td>
+            <td><code>3</code></td>
+            <td>How many top items to sample from during exploration</td>
+          </tr>
+          <tr>
+            <td><code>selection.freshnessHalfLifeHours</code></td>
+            <td><code>168</code></td>
+            <td>Lower = faster freshness decay, more recency bias</td>
+          </tr>
+          <tr>
+            <td><code>selection.weights</code></td>
+            <td><code>{ similarity: 0.45, scoreAvg: 0.35, exploration: 0.15, freshness: 0.05 }</code></td>
+            <td>How dimensions are balanced in the weighted score</td>
+          </tr>
+          <tr>
+            <td><code>aggregation.decayFactor</code></td>
+            <td><code>0.95</code></td>
+            <td>Lower = faster decay of old scores, more recency weighting</td>
+          </tr>
+          <tr>
+            <td><code>aggregation.criticWeight</code></td>
+            <td><code>0.6</code></td>
+            <td>Critic influence on final score</td>
+          </tr>
+          <tr>
+            <td><code>aggregation.engagementWeight</code></td>
+            <td><code>0.4</code></td>
+            <td>Engagement influence on final score</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </main>
+</div>
+
+<!-- Footer -->
+<footer>
+  <div class="container">
+    <div class="footer-left">
+      <a href="../">moatkit</a> &mdash; AGPL-3.0
+    </div>
+    <ul class="footer-links">
+      <li><a href="https://github.com/cemphlvn/semantic-loop" target="_blank" rel="noopener">GitHub</a></li>
+      <li><a href="../llms.txt">llms.txt</a></li>
+      <li><a href="../llms-full.txt">llms-full.txt</a></li>
+      <li><a href="https://jsr.io/@semantic-loop/core" target="_blank" rel="noopener">JSR</a></li>
+    </ul>
+  </div>
+</footer>
+
+<script>
+(function () {
+  var STORAGE_KEY = "sl-doc-level";
+  var tabs = document.querySelectorAll(".level-tab");
+  var body = document.body;
+  var saved = localStorage.getItem(STORAGE_KEY) || "vibe";
+
+  function setLevel(level) {
+    body.className = body.className.replace(/\bshow-\w+\b/g, "").replace(/\blevel-active\b/g, "").trim();
+    body.classList.add("level-active", "show-" + level);
+    tabs.forEach(function (t) {
+      t.classList.toggle("active", t.getAttribute("data-level") === level);
+    });
+    try { localStorage.setItem(STORAGE_KEY, level); } catch (e) {}
+  }
+
+  tabs.forEach(function (tab) {
+    tab.addEventListener("click", function () {
+      setLevel(this.getAttribute("data-level"));
+    });
+  });
+
+  setLevel(saved);
+})();
+</script>
+
+</body>
+</html>
