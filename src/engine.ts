@@ -8,8 +8,8 @@ import type {
   LoopConfig,
   OutcomeSignal,
   ProcessedOutcome,
-  SelectRequest,
   SelectedCandidate,
+  SelectRequest,
   SemanticItem,
 } from "./types.ts";
 import { clamp, defaultAggregate } from "./utils.ts";
@@ -40,9 +40,12 @@ export class SemanticLoopEngine {
     this.#config = {
       selection: mergeSelectionConfig(options.config?.selection),
       aggregation: {
-        criticWeight: options.config?.aggregation?.criticWeight ?? DEFAULT_AGGREGATION_CONFIG.criticWeight,
-        engagementWeight: options.config?.aggregation?.engagementWeight ?? DEFAULT_AGGREGATION_CONFIG.engagementWeight,
-        decayFactor: options.config?.aggregation?.decayFactor ?? DEFAULT_AGGREGATION_CONFIG.decayFactor,
+        criticWeight: options.config?.aggregation?.criticWeight ??
+          DEFAULT_AGGREGATION_CONFIG.criticWeight,
+        engagementWeight: options.config?.aggregation?.engagementWeight ??
+          DEFAULT_AGGREGATION_CONFIG.engagementWeight,
+        decayFactor: options.config?.aggregation?.decayFactor ??
+          DEFAULT_AGGREGATION_CONFIG.decayFactor,
       },
     };
     this.#random = options.random ?? Math.random;
@@ -109,7 +112,8 @@ export class SemanticLoopEngine {
         throw new NotFoundError(`Item ${outcome.itemId} was not found.`);
       }
 
-      const aggregateBefore = await this.#store.getAggregate(outcome.itemId) ?? defaultAggregate(outcome.itemId, this.#now().toISOString());
+      const aggregateBefore = await this.#store.getAggregate(outcome.itemId) ??
+        defaultAggregate(outcome.itemId, this.#now().toISOString());
       const critic = await this.#critic.score({ item, aggregateBefore, outcome });
       const finalScore = this.#combineScores(critic.score, outcome.engagementScore);
 
@@ -160,9 +164,6 @@ export class SemanticLoopEngine {
     }
     if (!item.content) {
       throw new ValidationError("Item content is required.");
-    }
-    if (item.embedding.length === 0) {
-      throw new ValidationError("Item embedding must not be empty.");
     }
   }
 
