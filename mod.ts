@@ -13,3 +13,5 @@ export * from "./src/runtime/edge.ts";
 export * from "./src/adapters/in_memory_store.ts";
 export * from "./src/adapters/supabase_rpc_store.ts";
 export * from "./src/critics/heuristic_critic.ts";
+export * from "./src/embedding.ts";
+export * from "./src/config.ts";
