@@ -4,6 +4,9 @@
   "exports": {
     ".": "./mod.ts"
   },
+  "publish": {
+    "exclude": ["tests/", "examples/", "docs/", "site/", "pro/", "sql/", ".claude/", "context7.json", ".mcp.json"]
+  },
   "tasks": {
     "check": "deno check mod.ts",
     "test": "deno test",
@@ -16,6 +19,9 @@
         "recommended"
       ]
     }
+  },
+  "compilerOptions": {
+    "lib": ["deno.ns", "deno.window"]
   },
   "fmt": {
     "semiColons": true,
