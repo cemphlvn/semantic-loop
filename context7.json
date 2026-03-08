@@ -1,17 +1,17 @@
 {
   "$schema": "https://context7.com/schema/context7.json",
   "projectTitle": "semantic-loop",
-  "description": "Typed orchestration for self-improving retrieval systems. Deno-first, edge-safe. Three methods: seed, selectNext, ingestOutcome.",
+  "description": "Typed orchestration for self-improving retrieval systems. Deno-first, edge-safe. createLoop() is the entry point: seed, select, ingest. Every cycle compounds.",
   "branch": "main",
-  "folders": ["src", "examples", "sql", "site/docs"],
+  "folders": ["src", "examples", "sql", "docs"],
   "excludeFolders": ["pro", ".claude", "node_modules"],
   "excludeFiles": ["CHANGELOG.md", "LICENSE"],
   "rules": [
-    "Always use TypeScript with explicit types on public APIs",
+    "Use createLoop() as the recommended entry point — it wires store, embedding, critic from a declarative config",
     "Import from jsr:@semantic-loop/core or mod.ts — named exports only",
     "All scores must be clamped to [0, 1] using clamp()",
     "All interfaces use readonly fields — never mutate state",
-    "Use InMemoryStore for testing, SupabaseRpcStore for production",
+    "Use store: 'memory' for testing, store: 'supabase' for production",
     "Web-standard APIs only: fetch, Request, Response, crypto.subtle",
     "Engine is stateless — all state lives in the MemoryStore"
   ]
