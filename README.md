@@ -1,185 +1,299 @@
+<div align="center">
+
 # semantic-loop
 
-A Deno-first TypeScript library for **self-improving retrieval systems** built around a simple loop:
+**Typed orchestration for self-improving retrieval systems.**
 
-**retrieve → publish → observe → critique → update → retrieve again**
+Seed content. Select the best. Observe what happens. Feed it back. The loop gets smarter every cycle.
 
-It is designed for edge functions, serverless webhooks, and Postgres/pgvector backends where the function instance stays stateless and the database keeps the memory.
+[Website](https://moatkit.dev) ·
+[Examples](https://github.com/cemphlvn/semantic-loop/tree/main/examples) ·
+[llms.txt](https://moatkit.dev/llms.txt)
 
-## Why this repo is shaped this way
+[![License: AGPL-3.0](https://img.shields.io/badge/license-AGPL--3.0-blue)](LICENSE)
+[![Deno](https://img.shields.io/badge/runtime-Deno-000?logo=deno)](https://deno.com)
+[![TypeScript](https://img.shields.io/badge/types-TypeScript-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org)
 
-The best library conventions from 2023–2026 point in the same direction:
+</div>
 
-- **ESM and web-standard APIs first** (`fetch`, `Request`, `Response`, Web Crypto)
-- **Small typed core, adapters at the edge**
-- **Config as data**, not hidden singletons
-- **Edge-safe orchestration**, heavy work pushed to the database or background jobs
-- **Docs generated from exports**, so public types stay explicit and boring in the good way
-- **Observability as a default surface**, not an afterthought
-
-This repo leans into those constraints on purpose.
-
-## 2030 view
-
-By 2030, libraries in this category will likely drift toward:
-
-- portable runtimes across Deno / Workers / Bun / Node
-- queue-native and durable workflows instead of request-only logic
-- telemetry schemas treated like public API
-- policy-driven selection loops instead of hard-coded ranking logic
-- database-side vector ops + WASM evaluators + thinner application shells
-
-So the core here stays narrow: typed orchestration, explicit interfaces, and swappable adapters.
-
-## Package layout
-
-```txt
-semantic-loop/
-├─ mod.ts
-├─ deno.json
-├─ src/
-│  ├─ engine.ts
-│  ├─ selection.ts
-│  ├─ telemetry.ts
-│  ├─ types.ts
-│  ├─ utils.ts
-│  ├─ runtime/
-│  │  └─ edge.ts
-│  ├─ critics/
-│  │  └─ heuristic_critic.ts
-│  └─ adapters/
-│     ├─ in_memory_store.ts
-│     └─ supabase_rpc_store.ts
-├─ sql/
-│  └─ 001_init.sql
-└─ examples/
-   └─ supabase-edge/
-      └─ index.ts
-```
-
-## What the library does
-
-`SemanticLoopEngine` handles two jobs:
-
-1. **Select the next item** from a candidate pool using similarity, historical score, freshness, and exploration pressure.
-2. **Ingest outcomes** after publishing, run a critic, compute a final score, and update the aggregate state.
-
-The library does **not** force a specific embedding provider, queue system, or LLM vendor.
-
-## Public concepts
-
-- **SemanticItem**: a stored hook, prompt, angle, or creative unit
-- **OutcomeSignal**: what came back from the platform after publishing
-- **Critic**: scores quality after observing reality
-- **MemoryStore**: where retrieval and aggregate state live
-- **SelectionConfig**: how exploration vs exploitation is balanced
-
-## Example
+---
 
 ```ts
-import {
-  deriveEngagementScore,
-  HeuristicCritic,
-  InMemoryStore,
-  SemanticLoopEngine,
-  type OutcomeSignal,
-  type SemanticItem,
-} from "./mod.ts";
+import { createLoop } from "@semantic-loop/core";
 
-const store = new InMemoryStore();
-const critic = new HeuristicCritic();
-const engine = new SemanticLoopEngine({ store, critic });
+const loop = createLoop({ store: "supabase", embedding: "openai" });
 
-const now = new Date().toISOString();
-const item: SemanticItem = {
-  id: "hook_1",
-  tribe: "ai-founders",
-  kind: "hook",
-  content: "Your moat is not the model, it is the loop that gets smarter after every post.",
-  embedding: [0.1, 0.3, 0.5, 0.2],
-  metadata: { channel: "reels" },
-  createdAt: now,
-  updatedAt: now,
-};
+await loop.seed([
+  { content: "The moat is the loop that compounds.", tribe: "founders" },
+]);
 
-await engine.seed([item]);
+const pick = await loop.select("compounding growth strategies");
 
-const selected = await engine.selectNext({
-  tribe: "ai-founders",
-  kind: "hook",
-  queryVector: [0.1, 0.29, 0.48, 0.22],
+await loop.ingest(pick.candidate.item.id, "instagram", {
+  views: 12400, likes: 340, shares: 89,
 });
-
-const outcome: OutcomeSignal = {
-  id: "evt_1",
-  itemId: selected.candidate.item.id,
-  platform: "instagram",
-  occurredAt: new Date().toISOString(),
-  metrics: {
-    views: 10_000,
-    likes: 640,
-    comments: 41,
-    shares: 28,
-    avgWatchSeconds: 17,
-  },
-  engagementScore: deriveEngagementScore({
-    views: 10_000,
-    likes: 640,
-    comments: 41,
-    shares: 28,
-    avgWatchSeconds: 17,
-  }),
-};
-
-const processed = await engine.ingestOutcome(outcome);
-console.log(processed.aggregate.scoreAvg);
+// Next select() is smarter. Every loop compounds.
 ```
 
-## Selection logic
+## What is this?
+
+A Deno-first library that turns any content — hooks, prompts, copy, templates — into a self-improving system. You seed items, the engine selects the best one for a given context, real-world outcomes flow back, and the system learns what works.
+
+```
+seed → select → publish → observe → ingest → select again
+         ↑                                        |
+         └────────── the loop that compounds ──────┘
+```
+
+Three methods. One feedback loop. Deploy to any edge runtime.
+
+## Quickstart
+
+```bash
+deno add jsr:@semantic-loop/core
+```
+
+```ts
+import { createLoop } from "@semantic-loop/core";
+
+// In-memory — no external services needed
+const loop = createLoop({ store: "memory" });
+
+await loop.seed([
+  { content: "Why most founders build features when they should build feedback loops." },
+  { content: "Generic productivity advice." },
+  { content: "The moat is the loop that compounds after every post." },
+]);
+
+// Select best candidate
+const pick = await loop.select();
+console.log(pick.candidate.item.content);
+
+// Simulate real-world outcome
+const result = await loop.ingest(pick.candidate.item.id, "instagram", {
+  views: 12400, likes: 340, comments: 45, shares: 89,
+});
+console.log(result.finalScore); // 0.341
+
+// Select again — now informed by the outcome
+const next = await loop.select();
+// → picks the item that performed, not random
+```
+
+> Run it: `deno run examples/quickstart.ts`
+
+## Configuration
+
+`createLoop()` takes a declarative config. String shorthands for the fast path, full objects for control, raw instances for escape hatches.
+
+**Minimal (local dev)**
+
+```ts
+const loop = createLoop({ store: "memory" });
+```
+
+**Production (Supabase + OpenAI)**
+
+```ts
+const loop = createLoop({
+  store: "supabase",      // reads SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY
+  embedding: "openai",    // reads OPENAI_API_KEY
+});
+```
+
+**Tuned (content optimization)**
+
+```ts
+const loop = createLoop({
+  store: {
+    provider: "supabase",
+    url: Deno.env.get("SUPABASE_URL")!,
+    serviceRoleKey: Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+  },
+  embedding: {
+    provider: "openai",
+    apiKey: Deno.env.get("OPENAI_API_KEY")!,
+    model: "text-embedding-3-small",
+  },
+  critic: {
+    provider: "heuristic",
+    noveltyKeywords: ["why", "mistake", "counterintuitive"],
+    penaltyKeywords: ["viral", "guaranteed"],
+  },
+  selection: {
+    epsilon: 0.2,
+    freshnessHalfLifeHours: 48,
+    weights: { similarity: 0.35, scoreAvg: 0.4, exploration: 0.15, freshness: 0.1 },
+  },
+  aggregation: { decayFactor: 0.9 },
+});
+```
+
+Every config slot accepts a string shorthand, a typed config object, or a raw interface implementation. No ceiling.
+
+## Supabase Setup
+
+1. Create a Supabase project
+2. Run the migration in the SQL Editor:
+
+```sql
+-- sql/001_init.sql creates:
+--   semantic_items (with pgvector embeddings)
+--   semantic_item_scores (aggregate state)
+--   semantic_outcomes (raw events)
+--   4 RPC functions: sl_upsert_item, sl_match_items, sl_record_outcome, sl_apply_outcome
+```
+
+3. Set environment variables:
+
+```bash
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=your-key
+OPENAI_API_KEY=sk-...  # optional, for embeddings
+```
+
+4. Use it:
+
+```ts
+const loop = createLoop({ store: "supabase", embedding: "openai" });
+```
+
+## What you can build
+
+| App | What it does | Loop signal |
+|-----|-------------|-------------|
+| **Hook Optimizer** | Rotate content hooks per audience, surface what lands | views, shares, saves |
+| **Prompt Loop** | Self-improving prompt variants per task type | success rate, user rating |
+| **Copy Variants** | Headlines, CTAs, email subjects that converge on what converts | clicks, conversions |
+| **Taste Engine** | Personal recommendations that sharpen over time | accept/reject, ratings |
+| **Smart Feed** | Self-curating content feeds | click, read-time, save |
+| **Adaptive Templates** | Proposals and emails that evolve toward what wins | win/loss, completion rate |
+
+Each is a single edge function backed by one Supabase project.
+
+## Interfaces
+
+The core defines four contracts. Swap any part.
+
+| Interface | What it does | Ships with |
+|-----------|-------------|------------|
+| **MemoryStore** | Where items and scores live | `InMemoryStore`, `SupabaseRpcStore` |
+| **Critic** | How content is judged after an outcome | `HeuristicCritic` |
+| **EmbeddingProvider** | Turns text into vectors | `OpenAIEmbedding`, `NoopEmbedding` |
+| **Telemetry** | Observe the loop itself | `NoopTelemetry` |
+
+## The high-level API
+
+`createLoop()` returns a `SemanticLoop` with three methods:
+
+| Method | What it does |
+|--------|-------------|
+| `loop.seed(items)` | Ingest content — auto-generates IDs, timestamps, embeddings |
+| `loop.select(query?, opts?)` | Pick the best candidate — auto-embeds the query |
+| `loop.ingest(itemId, platform, metrics)` | Record an outcome — auto-derives engagement score |
+
+The raw `SemanticLoopEngine` is accessible via `loop.engine` for direct control.
+
+<details>
+<summary><strong>How the selection algorithm works</strong></summary>
 
 Each candidate gets a weighted score:
 
-```txt
-weighted =
-  similarity * w_similarity +
-  score_avg * w_score_avg +
-  exploration_bonus * w_exploration +
-  freshness * w_freshness
+```
+weighted = similarity × 0.45
+         + scoreAvg   × 0.35
+         + exploration × 0.15
+         + freshness   × 0.05
 ```
 
-Then the engine either:
+- **similarity**: cosine similarity between query vector and item embedding
+- **scoreAvg**: running average from past outcomes (decay-weighted)
+- **exploration**: `1 / (attempts + 1)` — untested items get a bonus
+- **freshness**: exponential decay from last outcome, 168h half-life
 
-- picks the top candidate greedily, or
-- explores from the top-k pool with epsilon probability
+Selection is **epsilon-greedy**: with probability 0.18, pick randomly from the top-k pool instead of the best. All weights, epsilon, and half-life are configurable.
 
-This is intentionally simple. In production you can swap in a more exotic selector without rewriting the rest of the loop.
+</details>
 
-## SQL and pgvector
+<details>
+<summary><strong>How aggregation works</strong></summary>
 
-The `sql/001_init.sql` migration gives you:
+When an outcome arrives:
 
-- `semantic_items`
-- `semantic_item_scores`
-- `semantic_outcomes`
-- `sl_upsert_item(...)`
-- `sl_match_items(...)`
-- `sl_record_outcome(...)`
-- `sl_apply_outcome(...)`
+1. Critic scores the item → `criticScore`
+2. Engagement derived from metrics → `engagementScore`
+3. Final score = `criticScore × 0.6 + engagementScore × 0.4`
+4. Aggregate updated with decay: `scoreSum = oldScoreSum × 0.95 + finalScore`
+5. Running averages recomputed
 
-That is enough to run the loop on Supabase/Postgres with pgvector.
+Recent performance matters more than ancient history. Decay factor and weights are configurable.
+
+</details>
+
+<details>
+<summary><strong>Engagement score derivation</strong></summary>
+
+```
+interactionRate = (likes + comments×2 + shares×3 + saves×2 + clicks×2 + conversions×4) / views
+watchSignal     = clamp(avgWatchSeconds / 30)
+engagementScore = interactionRate × 0.7 + watchSignal × 0.3
+```
+
+Deep engagement (shares, watch time) is weighted higher than passive signals (views, likes). When using `createLoop`, engagement is derived automatically from the metrics you pass to `ingest()`.
+
+</details>
+
+## Architecture
+
+```
+mod.ts (barrel)
+  ├── types.ts              zero deps — all interfaces
+  ├── errors.ts             zero deps — error hierarchy
+  ├── utils.ts              cosine similarity, engagement, freshness
+  ├── selection.ts          weighted scoring + epsilon-greedy
+  ├── engine.ts             SemanticLoopEngine — the core
+  ├── telemetry.ts          swappable observability
+  ├── embedding.ts          EmbeddingProvider + OpenAI adapter
+  ├── config.ts             createLoop() factory
+  ├── critics/
+  │   └── heuristic_critic.ts
+  ├── adapters/
+  │   ├── in_memory_store.ts
+  │   └── supabase_rpc_store.ts
+  └── runtime/
+      └── edge.ts           HMAC verification, JSON helpers
+```
+
+No circular dependencies. Stateless engine, stateful database. Config as data, not singletons.
+
+## Design principles
+
+- **Scores are always [0, 1]** — every score clamped, no unbounded numerics
+- **Readonly interfaces** — all type contracts use `readonly`, data flows without mutation
+- **Web-standard APIs only** — `fetch`, `Request`, `Response`, `crypto.subtle`
+- **Config is data** — serializable, composable, portable
+- **Small typed core** — the engine defines interfaces, adapters implement them
 
 ## Edge usage pattern
 
-The clean split is:
+```
+edge function  →  verify webhook, ingest outcome, return fast
+database       →  retrieval, aggregates, vector matching (pgvector)
+background     →  re-embedding, backfills, recalibration
+```
 
-- **edge function**: verify webhook, ingest outcome, return fast
-- **database**: retrieval, aggregates, vector matching
-- **background task / queue**: heavy backfills, re-embedding, large-scale recalibration
+Stateless edge, stateful database. The function instance holds no memory.
 
-That keeps the request path cheap and the stateful learning loop durable.
+## Agent-aligned
 
-## License model
+This library is designed to be discovered and used by AI coding assistants:
 
-This repo ships with **AGPL-3.0-only** for the public codebase and assumes a separate commercial license for teams that want proprietary use.
+- **[llms.txt](https://moatkit.dev/llms.txt)** — machine-readable project index
+- **[Context7](https://context7.com)** — indexed for real-time doc retrieval
+- **Full TypeScript types** — agents generate correct code on the first try
 
-See `COMMERCIAL.md`.
+## License
+
+[AGPL-3.0-only](LICENSE) for the public codebase.
+
+The `pro/` directory contains commercial extensions (LLM critic, multi-signal critic, multi-platform store, loop analytics) under a separate proprietary license.
