@@ -1,0 +1,587 @@
+# semantic-loop
+
+> Typed orchestration for self-improving retrieval systems. Deno-first, edge-safe, web-standard APIs only. Three methods: seed, selectNext, ingestOutcome. Every cycle compounds intelligence.
+
+## Instructions
+
+- All scores are clamped to [0, 1]. Never pass unbounded numbers.
+- All interfaces use `readonly` fields. Never mutate state directly.
+- Import from `jsr:@semantic-loop/core` or `mod.ts`. Named exports only, no defaults.
+- The engine is stateless. All state lives in the MemoryStore (database).
+- Use `InMemoryStore` for testing, `SupabaseRpcStore` for production.
+- The `HeuristicCritic` is the public critic. `LlmCritic` and `MultiSignalCritic` are commercial (pro/).
+- Web-standard APIs only: fetch, Request, Response, crypto.subtle. No Node.js APIs.
+- Engagement scores are derived from `EngagementMetrics` using `deriveEngagementScore()`.
+- Selection uses epsilon-greedy (default epsilon 0.18) with weighted scoring: similarity 0.45, scoreAvg 0.35, exploration 0.15, freshness 0.05.
+- Aggregation uses decay-weighted updates (default decay 0.95). Final score = criticScore * 0.6 + engagementScore * 0.4.
+- `tribe` is a grouping key (e.g. audience segment, user ID). `kind` is a type classifier (e.g. "hook", "prompt", "article").
+- The `payload` field on OutcomeSignal is for arbitrary metadata that critics or analytics can use later.
+- When building a Supabase edge function, use `Deno.serve()` with the edge runtime helpers: `json()`, `methodNotAllowed()`, `verifyHmacSignature()`, `readJson()`.
+
+---
+
+## Quickstart
+
+### Install
+
+```typescript
+// Deno
+import { SemanticLoopEngine, InMemoryStore, HeuristicCritic } from "jsr:@semantic-loop/core";
+```
+
+### Basic usage
+
+```typescript
+import {
+  SemanticLoopEngine,
+  InMemoryStore,
+  HeuristicCritic,
+  deriveEngagementScore,
+} from "jsr:@semantic-loop/core";
+
+// 1. Set up engine
+const store = new InMemoryStore();
+const critic = new HeuristicCritic();
+const engine = new SemanticLoopEngine({ store, critic });
+
+// 2. Seed items (content with embeddings)
+await engine.seed([
+  {
+    id: "hook-1",
+    tribe: "ai-founders",
+    kind: "hook",
+    content: "The hidden moat nobody talks about: compounding feedback loops",
+    embedding: [0.1, 0.2, 0.3, /* ... 1536 dimensions */],
+    metadata: { tone: "provocative" },
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  // ... more items
+]);
+
+// 3. Select the best item for this context
+const selected = await engine.selectNext({
+  tribe: "ai-founders",
+  kind: "hook",
+  queryVector: [0.15, 0.22, 0.28, /* ... */],
+});
+
+console.log(selected.candidate.item.content);  // The winning hook
+console.log(selected.strategy);                 // "greedy" or "explore"
+console.log(selected.weightedScore);            // 0.0 to 1.0
+
+// 4. Later: feed back real-world results
+const processed = await engine.ingestOutcome({
+  id: "outcome-1",
+  itemId: selected.candidate.item.id,
+  platform: "instagram",
+  occurredAt: new Date().toISOString(),
+  metrics: {
+    views: 12400,
+    likes: 340,
+    comments: 28,
+    shares: 89,
+    saves: 214,
+  },
+  engagementScore: deriveEngagementScore({
+    views: 12400,
+    likes: 340,
+    comments: 28,
+    shares: 89,
+    saves: 214,
+  }),
+});
+
+console.log(processed.finalScore);          // Combined critic + engagement
+console.log(processed.aggregate.scoreAvg);  // Running average
+console.log(processed.aggregate.attempts);  // Total selections
+```
+
+### Production setup (Supabase)
+
+```typescript
+import {
+  SemanticLoopEngine,
+  SupabaseRpcStore,
+  HeuristicCritic,
+  json,
+  methodNotAllowed,
+  verifyHmacSignature,
+  deriveEngagementScore,
+} from "jsr:@semantic-loop/core";
+
+const store = new SupabaseRpcStore({
+  url: Deno.env.get("SUPABASE_URL") ?? "",
+  serviceRoleKey: Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+});
+
+const engine = new SemanticLoopEngine({
+  store,
+  critic: new HeuristicCritic(),
+});
+
+Deno.serve(async (req) => {
+  const url = new URL(req.url);
+
+  if (url.pathname === "/select" && req.method === "POST") {
+    const { tribe, kind, queryVector } = await req.json();
+    const selected = await engine.selectNext({ tribe, kind, queryVector });
+    return json({
+      content: selected.candidate.item.content,
+      id: selected.candidate.item.id,
+      strategy: selected.strategy,
+      score: selected.weightedScore,
+    });
+  }
+
+  if (url.pathname === "/webhook" && req.method === "POST") {
+    const body = await req.text();
+    const sig = req.headers.get("x-signature") ?? "";
+    const secret = Deno.env.get("WEBHOOK_SECRET") ?? "";
+
+    if (secret) {
+      const ok = await verifyHmacSignature({ body, signature: sig, secret });
+      if (!ok) return json({ error: "Invalid signature" }, 401);
+    }
+
+    const payload = JSON.parse(body);
+    const processed = await engine.ingestOutcome({
+      id: payload.eventId,
+      itemId: payload.itemId,
+      platform: payload.platform,
+      occurredAt: payload.occurredAt,
+      metrics: payload.metrics,
+      engagementScore: deriveEngagementScore(payload.metrics),
+    });
+
+    return json({
+      ok: true,
+      scoreAvg: processed.aggregate.scoreAvg,
+      attempts: processed.aggregate.attempts,
+    });
+  }
+
+  return methodNotAllowed(["POST"]);
+});
+```
+
+---
+
+## Complete API Reference
+
+### Types
+
+```typescript
+// Basic types
+type JsonPrimitive = string | number | boolean | null;
+type JsonValue = JsonPrimitive | JsonObject | JsonValue[];
+interface JsonObject { readonly [key: string]: JsonValue }
+type EmbeddingVector = readonly number[];
+
+// Core item
+interface SemanticItem {
+  readonly id: string;
+  readonly tribe: string;           // Grouping key
+  readonly kind: string;            // Type classifier
+  readonly content: string;
+  readonly embedding: EmbeddingVector;
+  readonly metadata: JsonObject;
+  readonly createdAt: string;       // ISO 8601
+  readonly updatedAt: string;
+  readonly archivedAt?: string;
+}
+
+// Aggregate state (accumulated scores)
+interface AggregateState {
+  readonly itemId: string;
+  readonly attempts: number;
+  readonly scoreSum: number;
+  readonly scoreAvg: number;        // [0,1]
+  readonly criticAvg: number;       // [0,1]
+  readonly engagementAvg: number;   // [0,1]
+  readonly lastScore?: number;
+  readonly lastCriticScore?: number;
+  readonly lastEngagementScore?: number;
+  readonly lastOutcomeAt?: string;
+  readonly updatedAt: string;
+}
+
+// Retrieved candidate
+interface Candidate {
+  readonly item: SemanticItem;
+  readonly aggregate: AggregateState;
+  readonly similarity: number;      // [0,1]
+}
+
+// Retrieval request
+interface RetrieveRequest {
+  readonly tribe?: string;
+  readonly kind?: string;
+  readonly queryVector?: EmbeddingVector;
+  readonly limit?: number;          // Default: 8
+  readonly minSimilarity?: number;  // Default: 0
+  readonly includeArchived?: boolean;
+}
+
+// Selection request (extends retrieval)
+interface SelectRequest extends RetrieveRequest {
+  readonly selection?: Partial<SelectionConfig>;
+}
+
+// Selected candidate with strategy
+interface SelectedCandidate {
+  readonly candidate: Candidate;
+  readonly strategy: "greedy" | "explore";
+  readonly weightedScore: number;
+}
+
+// Selection algorithm config
+interface SelectionWeights {
+  readonly similarity: number;      // Default: 0.45
+  readonly scoreAvg: number;        // Default: 0.35
+  readonly exploration: number;     // Default: 0.15
+  readonly freshness: number;       // Default: 0.05
+}
+
+interface SelectionConfig {
+  readonly epsilon: number;                  // Default: 0.18
+  readonly topKExplorationPool: number;      // Default: 3
+  readonly weights: SelectionWeights;
+  readonly freshnessHalfLifeHours: number;   // Default: 168
+}
+
+// Engagement metrics from platforms
+interface EngagementMetrics {
+  readonly impressions?: number;
+  readonly views?: number;
+  readonly watchSeconds?: number;
+  readonly avgWatchSeconds?: number;
+  readonly likes?: number;
+  readonly comments?: number;
+  readonly shares?: number;
+  readonly saves?: number;
+  readonly clicks?: number;
+  readonly conversions?: number;
+}
+
+// Outcome signal (feedback from the real world)
+interface OutcomeSignal {
+  readonly id: string;
+  readonly itemId: string;
+  readonly platform: string;
+  readonly occurredAt: string;
+  readonly metrics: EngagementMetrics;
+  readonly engagementScore: number; // [0,1]
+  readonly payload?: JsonObject;
+}
+
+// Critic types
+interface CriticInput {
+  readonly item: SemanticItem;
+  readonly aggregateBefore: AggregateState;
+  readonly outcome: OutcomeSignal;
+}
+
+interface CriticResult {
+  readonly score: number;           // [0,1]
+  readonly rationale: string;
+  readonly tags: readonly string[];
+  readonly meta?: JsonObject;
+}
+
+// Aggregation config
+interface AggregationConfig {
+  readonly criticWeight: number;    // Default: 0.6
+  readonly engagementWeight: number;  // Default: 0.4
+  readonly decayFactor: number;     // Default: 0.95
+}
+
+// Processed outcome (returned by ingestOutcome)
+interface ProcessedOutcome {
+  readonly item: SemanticItem;
+  readonly outcome: OutcomeSignal;
+  readonly critic: CriticResult;
+  readonly aggregate: AggregateState;
+  readonly finalScore: number;
+}
+
+// Engine config
+interface LoopConfig {
+  readonly selection: SelectionConfig;
+  readonly aggregation: AggregationConfig;
+}
+
+interface EngineOptions {
+  readonly store: MemoryStore;
+  readonly critic: Critic;
+  readonly telemetry?: Telemetry;
+  readonly config?: Partial<LoopConfig>;
+  readonly random?: () => number;
+  readonly now?: () => Date;
+}
+```
+
+### Contracts (Plugin Interfaces)
+
+```typescript
+interface Critic {
+  score(input: CriticInput): Promise<CriticResult>;
+}
+
+interface MemoryStore {
+  upsertItem(item: SemanticItem): Promise<void>;
+  retrieve(request: RetrieveRequest): Promise<readonly Candidate[]>;
+  getItem(itemId: string): Promise<SemanticItem | null>;
+  getAggregate(itemId: string): Promise<AggregateState | null>;
+  appendOutcome(outcome: OutcomeSignal, critic: CriticResult, finalScore: number): Promise<void>;
+  updateAggregate(update: AggregateUpdate, config: AggregationConfig): Promise<AggregateState>;
+}
+
+interface Telemetry {
+  startSpan(name: string): SpanLike;
+}
+
+interface SpanLike {
+  setAttribute(name: string, value: string | number | boolean): void;
+  end(): void;
+}
+```
+
+### SemanticLoopEngine
+
+```typescript
+class SemanticLoopEngine {
+  constructor(options: EngineOptions)
+
+  // Seed items into the store. Validates each item.
+  async seed(items: readonly SemanticItem[]): Promise<void>
+
+  // Select the best item. Returns candidate + strategy + score.
+  // Throws NotFoundError if no candidates match.
+  async selectNext(request: SelectRequest): Promise<SelectedCandidate>
+
+  // Process an outcome. Runs critic, combines scores, updates aggregate.
+  // Throws NotFoundError if item not found.
+  // Throws ValidationError if outcome fields are invalid.
+  async ingestOutcome(outcome: OutcomeSignal): Promise<ProcessedOutcome>
+}
+
+// Default configs
+const DEFAULT_SELECTION_CONFIG: SelectionConfig
+// epsilon: 0.18, topKExplorationPool: 3, freshnessHalfLifeHours: 168
+// weights: { similarity: 0.45, scoreAvg: 0.35, exploration: 0.15, freshness: 0.05 }
+
+const DEFAULT_AGGREGATION_CONFIG: AggregationConfig
+// criticWeight: 0.6, engagementWeight: 0.4, decayFactor: 0.95
+
+const DEFAULT_LOOP_CONFIG: LoopConfig
+```
+
+### Selection Functions
+
+```typescript
+function computeWeightedScore(candidate: Candidate, config: SelectionConfig, now: Date): number
+function selectCandidate(candidates: readonly Candidate[], config: SelectionConfig, random: () => number, now: Date): SelectedCandidate | null
+function mergeSelectionConfig(config?: Partial<SelectionConfig>): SelectionConfig
+```
+
+### Utility Functions
+
+```typescript
+function clamp(value: number, min?: number, max?: number): number
+function cosineSimilarity(a: EmbeddingVector, b: EmbeddingVector): number
+function defaultAggregate(itemId: string, nowIso: string): AggregateState
+function deriveEngagementScore(metrics: EngagementMetrics): number
+function hoursSince(isoDate: string, now: Date): number
+function freshnessScore(aggregate: AggregateState, config: SelectionConfig, now: Date): number
+function explorationScore(attempts: number): number
+```
+
+### Edge Runtime Helpers
+
+```typescript
+function verifyHmacSignature(input: {
+  body: string;
+  signature: string;
+  secret: string;
+  algorithm?: "SHA-256" | "SHA-384" | "SHA-512";
+}): Promise<boolean>
+
+function readJson<T>(request: Request): Promise<T>
+function json(data: JsonValue, status?: number, headers?: HeadersInit): Response
+function methodNotAllowed(methods: readonly string[]): Response
+function toHex(bytes: Uint8Array): string
+function timingSafeEqual(left: string, right: string): boolean
+```
+
+### Errors
+
+```typescript
+class SemanticLoopError extends Error {}
+class NotFoundError extends SemanticLoopError {}
+class ValidationError extends SemanticLoopError {}
+```
+
+### Adapters
+
+```typescript
+// Testing
+class InMemoryStore implements MemoryStore {
+  constructor(now?: () => Date)
+}
+
+// Production
+class SupabaseRpcStore implements MemoryStore {
+  constructor(options: {
+    url: string;
+    serviceRoleKey: string;
+    itemsTable?: string;        // "semantic_items"
+    aggregatesTable?: string;   // "semantic_item_scores"
+    rpc?: Partial<{
+      upsertItem: string;      // "sl_upsert_item"
+      matchItems: string;      // "sl_match_items"
+      recordOutcome: string;   // "sl_record_outcome"
+      applyOutcome: string;    // "sl_apply_outcome"
+    }>;
+    fetcher?: typeof fetch;
+  })
+}
+```
+
+### Critics
+
+```typescript
+// Public: keyword-based heuristic scorer
+class HeuristicCritic implements Critic {
+  constructor(options?: {
+    noveltyKeywords?: readonly string[];    // ["why", "mistake", "hidden", ...]
+    penaltyKeywords?: readonly string[];    // ["ultimate", "best ever", ...]
+  })
+}
+
+class NoopTelemetry implements Telemetry {}
+```
+
+---
+
+## Algorithms
+
+### Selection (Epsilon-Greedy Weighted Scoring)
+
+```
+weightedScore = similarity * 0.45
+              + scoreAvg * 0.35
+              + 1/(attempts+1) * 0.15
+              + exp((-ln2 * hoursSinceLastOutcome) / halfLifeHours) * 0.05
+
+With probability epsilon (0.18): pick random from top-K pool
+Otherwise: pick highest weightedScore
+```
+
+### Engagement Score Derivation
+
+```
+interactionRate = (likes + comments*2 + shares*3 + saves*2 + clicks*2 + conversions*4) / views
+watchSignal = clamp(avgWatchSeconds / 30, 0, 1)
+engagementScore = interactionRate * 0.7 + watchSignal * 0.3
+```
+
+### Aggregation (Decay-Weighted Update)
+
+```
+finalScore = criticScore * 0.6 + engagementScore * 0.4
+attempts = old_attempts + 1
+scoreSum = old_scoreSum * decayFactor + finalScore
+scoreAvg = scoreSum / attempts
+```
+
+### Cosine Similarity
+
+```
+dot = sum(a[i] * b[i])
+normalized = (dot / (norm(a) * norm(b)) + 1) / 2    // Maps [-1,1] to [0,1]
+```
+
+---
+
+## Database Schema (PostgreSQL + pgvector)
+
+### Tables
+
+```sql
+-- Content items with vector embeddings
+CREATE TABLE semantic_items (
+  id TEXT PRIMARY KEY,
+  tribe TEXT NOT NULL,
+  kind TEXT NOT NULL,
+  content TEXT NOT NULL,
+  embedding vector(1536) NOT NULL,
+  metadata JSONB NOT NULL DEFAULT '{}',
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  archived_at TIMESTAMPTZ
+);
+
+-- Aggregate scores per item
+CREATE TABLE semantic_item_scores (
+  item_id TEXT PRIMARY KEY REFERENCES semantic_items(id) ON DELETE CASCADE,
+  attempts INTEGER NOT NULL DEFAULT 0,
+  score_sum DOUBLE PRECISION NOT NULL DEFAULT 0,
+  score_avg DOUBLE PRECISION NOT NULL DEFAULT 0,
+  critic_avg DOUBLE PRECISION NOT NULL DEFAULT 0,
+  engagement_avg DOUBLE PRECISION NOT NULL DEFAULT 0,
+  last_score DOUBLE PRECISION,
+  last_critic_score DOUBLE PRECISION,
+  last_engagement_score DOUBLE PRECISION,
+  last_outcome_at TIMESTAMPTZ,
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- Outcome event log
+CREATE TABLE semantic_outcomes (
+  id TEXT PRIMARY KEY,
+  item_id TEXT NOT NULL REFERENCES semantic_items(id) ON DELETE CASCADE,
+  platform TEXT NOT NULL,
+  occurred_at TIMESTAMPTZ NOT NULL,
+  metrics JSONB NOT NULL DEFAULT '{}',
+  payload JSONB NOT NULL DEFAULT '{}',
+  engagement_score DOUBLE PRECISION NOT NULL,
+  critic_score DOUBLE PRECISION NOT NULL,
+  final_score DOUBLE PRECISION NOT NULL,
+  rationale TEXT,
+  tags TEXT[] NOT NULL DEFAULT '{}',
+  meta JSONB NOT NULL DEFAULT '{}',
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+```
+
+### RPC Functions
+
+```sql
+-- Idempotent insert/update
+sl_upsert_item(p_id, p_tribe, p_kind, p_content, p_embedding, p_metadata, p_created_at, p_updated_at, p_archived_at)
+
+-- Vector similarity search with filtering
+sl_match_items(p_tribe, p_kind, p_query_embedding, p_limit, p_min_similarity, p_include_archived)
+
+-- Append outcome event
+sl_record_outcome(p_item_id, p_event_id, p_platform, p_occurred_at, p_metrics, p_payload, p_engagement_score, p_critic_score, p_final_score, p_rationale, p_tags, p_meta)
+
+-- Atomic aggregate update with decay
+sl_apply_outcome(p_item_id, p_occurred_at, p_engagement_score, p_critic_score, p_final_score, p_decay_factor)
+```
+
+---
+
+## Architecture Principles
+
+1. **Stateless edge, stateful database** — Function instances hold no memory. The database keeps the loop durable.
+2. **Config as data** — No singletons, no global state. Everything flows through EngineOptions.
+3. **Small typed core, adapters at the edge** — Core defines interfaces. Adapters implement them. Core never imports an adapter.
+4. **Scores are always [0, 1]** — Every score is clamped. No unbounded numerics.
+5. **Readonly interfaces** — All type contracts use readonly. Data flows without mutation.
+6. **Web-standard APIs only** — fetch, Request, Response, crypto.subtle. No Node.js APIs.
+
+## License
+
+AGPL-3.0-only for the public core. Commercial extensions in pro/ are proprietary.

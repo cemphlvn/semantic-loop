@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>moatkit &mdash; Self-improving retrieval for the edge</title>
+  <meta name="description" content="Typed orchestration for self-improving retrieval systems. Three methods. One feedback loop. Compounding intelligence on every edge function.">
+  <link rel="stylesheet" href="global.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<!-- Nav -->
+<nav>
+  <div class="container">
+    <a href="/" class="nav-logo">moat<span>kit</span></a>
+    <ul class="nav-links">
+      <li><a href="#how-it-works">How it works</a></li>
+      <li><a href="#possible">What's possible</a></li>
+      <li><a href="#docs">Docs</a></li>
+      <li>
+        <a href="https://github.com/moatkit/semantic-loop" class="nav-github" target="_blank" rel="noopener">
+          <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path></svg>
+          GitHub
+        </a>
+      </li>
+    </ul>
+  </div>
+</nav>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="container">
+    <h1>Retrieval that<br><span class="accent">gets smarter</span></h1>
+    <p class="hero-subtitle">
+      Typed orchestration for self-improving retrieval systems.<br>
+      Three methods. One feedback loop. Deploy to any edge runtime.
+    </p>
+
+    <div class="install-bar">
+      <span class="prompt">$</span>
+      <code>deno add jsr:@semantic-loop/core</code>
+    </div>
+
+    <div class="hero-actions">
+      <a href="#docs" class="btn btn-primary">Get started</a>
+      <a href="https://github.com/moatkit/semantic-loop" class="btn btn-secondary" target="_blank" rel="noopener">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+        View source
+      </a>
+    </div>
+
+    <!-- Hero code block -->
+    <div class="code-block">
+      <div class="code-block-header">
+        <div class="code-block-dots"><span></span><span></span><span></span></div>
+        <span class="code-block-title">the entire API</span>
+      </div>
+      <pre><span class="kw">const</span> engine <span class="op">=</span> <span class="kw">new</span> <span class="fn">SemanticLoopEngine</span>({ store, critic });
+
+<span class="cm">// 1. Seed content with embeddings</span>
+<span class="kw">await</span> engine.<span class="fn">seed</span>(items);
+
+<span class="cm">// 2. Select the best item for this context</span>
+<span class="kw">const</span> { candidate, strategy } <span class="op">=</span> <span class="kw">await</span> engine.<span class="fn">selectNext</span>({
+  tribe: <span class="str">"ai-founders"</span>,
+  kind: <span class="str">"hook"</span>,
+  queryVector,
+});
+
+<span class="cm">// 3. Later: feed back what happened</span>
+<span class="kw">const</span> result <span class="op">=</span> <span class="kw">await</span> engine.<span class="fn">ingestOutcome</span>({
+  itemId: candidate.item.id,
+  platform: <span class="str">"instagram"</span>,
+  metrics: { views: <span class="num">12400</span>, shares: <span class="num">89</span>, saves: <span class="num">214</span> },
+  engagementScore: <span class="num">0.73</span>,
+});
+<span class="cm">// Next selectNext() is smarter. Every loop compounds.</span></pre>
+    </div>
+  </div>
+</section>
+
+<!-- How it works -->
+<section id="how-it-works">
+  <div class="container">
+    <p class="section-label">How it works</p>
+    <h2>One loop. Compounding returns.</h2>
+    <p>Every selection teaches the system. Every outcome sharpens the next pick. The loop never stops learning.</p>
+
+    <div class="loop-steps">
+      <div class="loop-step">
+        <div class="loop-step-number">01</div>
+        <h3>Seed</h3>
+        <p>Load content variants with embeddings. Hooks, prompts, copy, templates &mdash; anything you want to optimize.</p>
+      </div>
+      <div class="loop-step">
+        <div class="loop-step-number">02</div>
+        <h3>Select</h3>
+        <p>Epsilon-greedy algorithm picks the best item, weighted by similarity, past performance, exploration, and freshness.</p>
+      </div>
+      <div class="loop-step">
+        <div class="loop-step-number">03</div>
+        <h3>Observe</h3>
+        <p>Real-world signals flow back via webhooks. Views, clicks, shares, ratings, conversions &mdash; any metric you track.</p>
+      </div>
+      <div class="loop-step">
+        <div class="loop-step-number">04</div>
+        <h3>Critique</h3>
+        <p>A critic scores the content. Start with keyword heuristics. Graduate to LLM-as-judge. Compose multiple critics.</p>
+      </div>
+      <div class="loop-step">
+        <div class="loop-step-number">05</div>
+        <h3>Update</h3>
+        <p>Decay-weighted aggregation updates running scores. Recent performance matters more than ancient history.</p>
+      </div>
+      <div class="loop-step">
+        <div class="loop-step-number">06</div>
+        <h3>Loop</h3>
+        <p>Next selection is informed by everything before it. The system compounds intelligence with every cycle.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- What's Possible -->
+<section id="possible">
+  <div class="container">
+    <p class="section-label">What's possible</p>
+    <h2>What you can build</h2>
+    <p>Each is a single edge function backed by one Supabase table. What used to need a data team is now a weekend project.</p>
+
+    <div class="possible-grid">
+      <div class="possible-item">
+        <h3>Hook Optimizer</h3>
+        <p>Seed 50 content hooks per audience tribe. Platform webhooks feed engagement signals. The loop surfaces which hooks land and retires the ones that don't.</p>
+        <span class="possible-tag">attention economy</span>
+      </div>
+
+      <div class="possible-item">
+        <h3>Prompt Loop</h3>
+        <p>Register prompt variants per task type. Measure success rate, latency, user rating. Best prompt is selected per context, automatically.</p>
+        <span class="possible-tag">agent economy</span>
+      </div>
+
+      <div class="possible-item">
+        <h3>Copy Variants</h3>
+        <p>Landing page headlines, CTAs, email subjects. Track clicks and conversions. The loop converges on what converts, even with low traffic.</p>
+        <span class="possible-tag">conversion economy</span>
+      </div>
+
+      <div class="possible-item">
+        <h3>Taste Engine</h3>
+        <p>Personal recommendations for books, tools, restaurants, music. Accept/reject/rate signals shape a taste profile that sharpens over time.</p>
+        <span class="possible-tag">discovery economy</span>
+      </div>
+
+      <div class="possible-item">
+        <h3>Smart Feed</h3>
+        <p>Self-curating content feeds for newsletters, communities, or learning paths. Click and read-time signals rank what surfaces next.</p>
+        <span class="possible-tag">discovery economy</span>
+      </div>
+
+      <div class="possible-item">
+        <h3>Adaptive Templates</h3>
+        <p>Proposals, outreach emails, meeting agendas. Track win/loss and completion rates. Templates evolve toward what works for each segment.</p>
+        <span class="possible-tag">process economy</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Primitives -->
+<section id="primitives">
+  <div class="container">
+    <p class="section-label">Primitives</p>
+    <h2>Everything is an interface</h2>
+    <p>Swap any part. The core defines contracts. Adapters implement them.</p>
+
+    <div class="primitives">
+      <div class="primitive">
+        <h3>MemoryStore</h3>
+        <p>Where items and scores live. Ship with <code>InMemoryStore</code> for testing, <code>SupabaseRpcStore</code> for production. Build your own.</p>
+      </div>
+      <div class="primitive">
+        <h3>Critic</h3>
+        <p>How content is judged. <code>HeuristicCritic</code> uses keywords. <code>LlmCritic</code> uses Claude or GPT as judge. Compose with <code>MultiSignalCritic</code>.</p>
+      </div>
+      <div class="primitive">
+        <h3>Telemetry</h3>
+        <p>Observe the loop itself. <code>NoopTelemetry</code> by default. Plug in OpenTelemetry, Datadog, or any tracing provider.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Agent-Aligned -->
+<section id="agent-aligned">
+  <div class="container">
+    <p class="section-label">Agent-aligned</p>
+    <h2>Built for humans and agents</h2>
+    <p>AI coding assistants can discover and use this library natively.</p>
+
+    <div class="agent-row">
+      <div class="agent-card">
+        <h3>/llms.txt</h3>
+        <p>Machine-readable project index. Every AI assistant can understand what this library does and how to use it.</p>
+      </div>
+      <div class="agent-card">
+        <h3>Context7</h3>
+        <p>Indexed on Context7 for real-time doc retrieval. Agents get version-specific API docs injected into their context.</p>
+      </div>
+      <div class="agent-card">
+        <h3>Typed everything</h3>
+        <p>Full TypeScript types with JSDoc. Agents generate correct code on the first try because the type surface is explicit.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Docs -->
+<section id="docs">
+  <div class="container">
+    <p class="section-label">Documentation</p>
+    <h2>Start building</h2>
+    <p>Everything you need to go from zero to a self-improving system.</p>
+
+    <div class="docs-grid">
+      <a href="docs/quickstart.html" class="docs-card">
+        <h3>Quickstart</h3>
+        <p>Install, seed items, select, ingest outcomes. Running in five minutes.</p>
+      </a>
+      <a href="docs/api.html" class="docs-card">
+        <h3>API Reference</h3>
+        <p>Every type, interface, class, and function. Complete signatures and contracts.</p>
+      </a>
+      <a href="docs/adapters.html" class="docs-card">
+        <h3>Adapters</h3>
+        <p>InMemoryStore, SupabaseRpcStore, and how to build your own MemoryStore.</p>
+      </a>
+      <a href="docs/critics.html" class="docs-card">
+        <h3>Critics</h3>
+        <p>HeuristicCritic, LlmCritic, MultiSignalCritic. Scoring strategies and composition.</p>
+      </a>
+      <a href="docs/selection.html" class="docs-card">
+        <h3>Selection Algorithm</h3>
+        <p>Epsilon-greedy, weighted scoring, exploration bonuses, freshness decay. The math.</p>
+      </a>
+      <a href="docs/sql.html" class="docs-card">
+        <h3>Database Schema</h3>
+        <p>PostgreSQL + pgvector tables, RPC functions, and migration guide.</p>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer>
+  <div class="container">
+    <div class="footer-left">
+      <a href="/">moatkit</a> &mdash; AGPL-3.0
+    </div>
+    <ul class="footer-links">
+      <li><a href="https://github.com/moatkit/semantic-loop" target="_blank" rel="noopener">GitHub</a></li>
+      <li><a href="/llms.txt">llms.txt</a></li>
+      <li><a href="/llms-full.txt">llms-full.txt</a></li>
+      <li><a href="https://jsr.io/@semantic-loop/core" target="_blank" rel="noopener">JSR</a></li>
+    </ul>
+  </div>
+</footer>
+
+</body>
+</html>

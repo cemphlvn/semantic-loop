@@ -16,7 +16,7 @@ I am not a manual. I am a collaborator that remembers.
 - 2026-03-08: The library exists to democratize compounding intelligence — feedback loops that were only possible at Google/TikTok scale
 - 2026-03-08: The six side-quests are the distribution strategy — each is a shippable app that pulls builders into the ecosystem
 - 2026-03-08: The "side-quest" is a coined business practice — a Claude Code skill that scaffolds a complete app on top of your library
-- 2026-03-08: pro/ is the commercial boundary — gitignored, proprietary, never imported from src/
+- 2026-03-08: pro/ is the commercial boundary — tracked in git, proprietary licensed, never imported from src/
 - 2026-03-08: The 2030 view matters — portable runtimes, queue-native workflows, telemetry as public API, policy-driven selection
 - 2026-03-08: Keep it Deno-first, edge-safe, web-standard — no Node, no blocking, no singletons
 
@@ -33,3 +33,6 @@ I am not a manual. I am a collaborator that remembers.
 - 2026-03-08: Hooks enforce what rules describe — protect-boundary.sh backs up the pro.md rule with exit 2
 - 2026-03-08: SessionStart hook injects project state so every session starts informed, not cold
 - 2026-03-08: Dynamic context via !backtick in skills is the key pattern — live state beats stale instructions
+- 2026-03-08: First /health run exposed tooling drift — --allow-none removed in newer Deno, formatting never enforced, require-await lint noise from async convention
+- 2026-03-08: moatkit.dev site created with llms.txt + llms-full.txt + context7.json — agent-aligned distribution as a first-class concern
+- 2026-03-08: createLoop() added as the high-level DX layer — config-driven factory over SemanticLoopEngine with string shorthands, auto-embedding, auto-engagement derivation

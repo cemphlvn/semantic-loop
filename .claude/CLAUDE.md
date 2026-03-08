@@ -52,7 +52,7 @@ Full architecture decisions, dependency graph, algorithms, and component guides:
 
 ## The `pro/` Directory
 
-Commercial code — gitignored, proprietary license.
+Commercial code — tracked in git, proprietary license.
 Contains: LLM critic, multi-signal critic, multi-platform adapter, loop analytics, side-quest scaffolds.
 **Never import `pro/` from `src/`.** The boundary hook enforces this.
 

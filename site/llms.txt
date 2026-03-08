@@ -1,0 +1,45 @@
+# semantic-loop
+
+> Typed orchestration for self-improving retrieval systems. Deno-first, edge-safe, web-standard APIs only. Three methods: seed, selectNext, ingestOutcome. Every cycle compounds intelligence.
+
+## Instructions
+
+- All scores are clamped to [0, 1]. Never pass unbounded numbers.
+- All interfaces use `readonly` fields. Never mutate state directly.
+- Import from `jsr:@semantic-loop/core` or `mod.ts`. Named exports only, no defaults.
+- The engine is stateless. All state lives in the MemoryStore (database).
+- Use `InMemoryStore` for testing, `SupabaseRpcStore` for production.
+- The `HeuristicCritic` is the public critic. `LlmCritic` and `MultiSignalCritic` are commercial (pro/).
+- Web-standard APIs only: fetch, Request, Response, crypto.subtle. No Node.js APIs.
+- Engagement scores are derived from `EngagementMetrics` using `deriveEngagementScore()`.
+- Selection uses epsilon-greedy (default epsilon 0.18) with weighted scoring: similarity 0.45, scoreAvg 0.35, exploration 0.15, freshness 0.05.
+- Aggregation uses decay-weighted updates (default decay 0.95). Final score = criticScore * 0.6 + engagementScore * 0.4.
+
+## Docs
+
+- [Quickstart](https://moatkit.dev/docs/quickstart.html): Install, seed items, select, and ingest outcomes in five minutes
+- [API Reference](https://moatkit.dev/docs/api.html): Every type, interface, class, and function with complete signatures
+- [Adapters](https://moatkit.dev/docs/adapters.html): InMemoryStore, SupabaseRpcStore, and building custom stores
+- [Critics](https://moatkit.dev/docs/critics.html): HeuristicCritic, LlmCritic, MultiSignalCritic, and custom scoring
+- [Selection Algorithm](https://moatkit.dev/docs/selection.html): Epsilon-greedy, weighted scoring, exploration, freshness decay
+- [Database Schema](https://moatkit.dev/docs/sql.html): PostgreSQL + pgvector tables and RPC functions
+
+## Examples
+
+- [Supabase Edge Function](https://github.com/moatkit/semantic-loop/tree/main/examples/supabase-edge): Complete webhook ingestion with HMAC verification
+- [Hook Optimizer scaffold](https://moatkit.dev/docs/scaffolds.html#hook-optimizer): Self-improving social media hook selector
+- [Prompt Loop scaffold](https://moatkit.dev/docs/scaffolds.html#prompt-loop): Self-improving prompt variant selector
+- [Taste Engine scaffold](https://moatkit.dev/docs/scaffolds.html#taste-engine): Personal recommendation engine
+
+## API
+
+- [Types](https://moatkit.dev/docs/api.html#types): SemanticItem, AggregateState, Candidate, OutcomeSignal, EngagementMetrics, CriticResult, and all config interfaces
+- [Engine](https://moatkit.dev/docs/api.html#engine): SemanticLoopEngine class with seed(), selectNext(), ingestOutcome()
+- [Utils](https://moatkit.dev/docs/api.html#utils): deriveEngagementScore, cosineSimilarity, clamp, freshnessScore, explorationScore
+- [Edge Runtime](https://moatkit.dev/docs/api.html#edge): verifyHmacSignature, json, methodNotAllowed, readJson
+- [Errors](https://moatkit.dev/docs/api.html#errors): SemanticLoopError, ValidationError, NotFoundError
+
+## Optional
+
+- [Architecture](https://moatkit.dev/docs/architecture.html): Design principles, dependency graph, commercial boundary
+- [Side-Quest Scaffolds](https://moatkit.dev/docs/scaffolds.html): Six app generators (hook-optimizer, copy-loop, smart-feed, taste-engine, prompt-loop, adaptive-template)
