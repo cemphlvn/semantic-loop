@@ -1,20 +1,4 @@
 {
-  "$schema": "https://context7.com/schema/context7.json",
   "url": "https://context7.com/cemphlvn/semantic-loop",
-  "public_key": "pk_58uG70ifsA7paSsl88TFr",
-  "projectTitle": "semantic-loop",
-  "description": "Typed orchestration for self-improving retrieval systems. Deno-first, edge-safe. createLoop() is the entry point: seed, select, ingest. Every cycle compounds.",
-  "branch": "main",
-  "folders": ["src", "examples", "sql", "docs"],
-  "excludeFolders": ["pro", ".claude", "node_modules"],
-  "excludeFiles": ["CHANGELOG.md", "LICENSE"],
-  "rules": [
-    "Use createLoop() as the recommended entry point — it wires store, embedding, critic from a declarative config",
-    "Import from jsr:@semantic-loop/core or mod.ts — named exports only",
-    "All scores must be clamped to [0, 1] using clamp()",
-    "All interfaces use readonly fields — never mutate state",
-    "Use store: 'memory' for testing, store: 'supabase' for production",
-    "Web-standard APIs only: fetch, Request, Response, crypto.subtle",
-    "Engine is stateless — all state lives in the MemoryStore"
-  ]
+  "public_key": "pk_58uG70ifsA7paSsl88TFr"
 }
