@@ -166,3 +166,34 @@ export interface EngineOptions {
   readonly random?: () => number;
   readonly now?: () => Date;
 }
+
+export interface EmbeddingProvider {
+  embed(text: string): Promise<EmbeddingVector>;
+  embedBatch?(texts: readonly string[]): Promise<readonly EmbeddingVector[]>;
+  readonly dimensions: number;
+}
+
+export interface ItemInput {
+  readonly content: string;
+  readonly tribe?: string;
+  readonly kind?: string;
+  readonly id?: string;
+  readonly metadata?: JsonObject;
+  readonly embedding?: EmbeddingVector;
+}
+
+export interface SelectOptions {
+  readonly tribe?: string;
+  readonly kind?: string;
+  readonly limit?: number;
+  readonly minSimilarity?: number;
+  readonly includeArchived?: boolean;
+  readonly selection?: Partial<SelectionConfig>;
+}
+
+export interface IngestOptions {
+  readonly id?: string;
+  readonly occurredAt?: string;
+  readonly engagementScore?: number;
+  readonly payload?: JsonObject;
+}
