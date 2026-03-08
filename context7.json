@@ -1,5 +1,7 @@
 {
   "$schema": "https://context7.com/schema/context7.json",
+  "url": "https://context7.com/cemphlvn/semantic-loop",
+  "public_key": "pk_58uG70ifsA7paSsl88TFr",
   "projectTitle": "semantic-loop",
   "description": "Typed orchestration for self-improving retrieval systems. Deno-first, edge-safe. createLoop() is the entry point: seed, select, ingest. Every cycle compounds.",
   "branch": "main",
