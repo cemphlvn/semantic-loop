@@ -71,7 +71,8 @@
 <span class="kw">await</span> loop.<span class="fn">ingest</span>(pick.candidate.item.id, <span class="str">"instagram"</span>, {
   views: <span class="num">12400</span>, likes: <span class="num">340</span>, shares: <span class="num">89</span>,
 });
-<span class="cm">// Next select() is smarter. Every loop compounds.</span></pre>
+<span class="cm">// Next select() is smarter. Every loop compounds.</span>
+<span class="cm">// If the item scored well, the breeder generates variations automatically.</span></pre>
     </div>
   </div>
 </section>
@@ -81,7 +82,7 @@
   <div class="container">
     <p class="section-label">Configs</p>
     <h2>One function, any setup</h2>
-    <p><code>createLoop()</code> wires stores, embeddings, critics, and tuning from a single declarative config.</p>
+    <p><code>createLoop()</code> wires stores, embeddings, critics, breeders, and tuning from a single declarative config.</p>
 
     <div class="configs-grid">
       <div class="config-card">
@@ -107,6 +108,22 @@
           <pre><span class="kw">const</span> loop <span class="op">=</span> <span class="fn">createLoop</span>({
   store: <span class="str">"supabase"</span>,
   embedding: <span class="str">"openai"</span>,
+});</pre>
+        </div>
+      </div>
+
+      <div class="config-card">
+        <h3>With breeding</h3>
+        <div class="code-block">
+          <div class="code-block-header">
+            <div class="code-block-dots"><span></span><span></span><span></span></div>
+            <span class="code-block-title">pool grows from winners</span>
+          </div>
+          <pre><span class="kw">const</span> loop <span class="op">=</span> <span class="fn">createLoop</span>({
+  store: <span class="str">"supabase"</span>,
+  embedding: <span class="str">"openai"</span>,
+  breeder: myLlmBreeder,
+  breeding: { scoreThreshold: <span class="num">0.7</span> },
 });</pre>
         </div>
       </div>
@@ -175,8 +192,8 @@
       </div>
       <div class="loop-step">
         <div class="loop-step-number">06</div>
-        <h3>Loop</h3>
-        <p>Next selection is informed by everything before it. The system compounds intelligence with every cycle.</p>
+        <h3>Breed &amp; Loop</h3>
+        <p>When items cross a score threshold, the breeder generates variations. New candidates enter the pool. The loop compounds and expands.</p>
       </div>
     </div>
   </div>
@@ -252,6 +269,10 @@
       <div class="primitive">
         <h3>Telemetry</h3>
         <p>Observe the loop itself. <code>NoopTelemetry</code> by default. Plug in OpenTelemetry, Datadog, or any tracing provider.</p>
+      </div>
+      <div class="primitive">
+        <h3>Breeder</h3>
+        <p>How the pool grows. <code>NoopBreeder</code> by default (static pool). Plug in an LLM breeder to generate variations from winners.</p>
       </div>
     </div>
   </div>

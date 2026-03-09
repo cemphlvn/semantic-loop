@@ -4,7 +4,7 @@
 
 ## Instructions
 
-- **Use `createLoop()` as the primary entry point.** It wires stores, embeddings, critics, and tuning from a single declarative config.
+- **Use `createLoop()` as the primary entry point.** It wires stores, embeddings, critics, breeders, and tuning from a single declarative config.
 - All scores are clamped to [0, 1]. Never pass unbounded numbers.
 - All interfaces use `readonly` fields. Never mutate state directly.
 - Import from `jsr:@semantic-loop/core` or `mod.ts`. Named exports only, no defaults.
@@ -12,6 +12,7 @@
 - Use `store: "memory"` for testing, `store: "supabase"` for production. Or pass a custom `MemoryStore` instance.
 - Use `embedding: "openai"` for production embeddings. Omit for no auto-embedding (NoopEmbedding).
 - The `HeuristicCritic` is the default critic. `LlmCritic` and `MultiSignalCritic` are commercial (pro/).
+- The `Breeder` interface controls how the pool grows. `NoopBreeder` (default) means static pool. Plug in a custom breeder (e.g. LLM-based) to generate variations from high-performing items.
 - Web-standard APIs only: fetch, Request, Response, crypto.subtle. No Node.js APIs.
 - Engagement scores are derived from `EngagementMetrics` using `deriveEngagementScore()`.
 - Selection uses epsilon-greedy (default epsilon 0.18) with weighted scoring: similarity 0.45, scoreAvg 0.35, exploration 0.15, freshness 0.05.

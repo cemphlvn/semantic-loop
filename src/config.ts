@@ -1,5 +1,7 @@
 import type {
   AggregationConfig,
+  Breeder,
+  BreederConfig,
   Critic,
   EmbeddingProvider,
   EmbeddingVector,
@@ -14,8 +16,13 @@ import type {
   SemanticItem,
   Telemetry,
 } from "./types.ts";
+import { NoopBreeder } from "./breeder.ts";
 import { ValidationError } from "./errors.ts";
-import { DEFAULT_AGGREGATION_CONFIG, SemanticLoopEngine } from "./engine.ts";
+import {
+  DEFAULT_AGGREGATION_CONFIG,
+  DEFAULT_BREEDER_CONFIG,
+  SemanticLoopEngine,
+} from "./engine.ts";
 import { DEFAULT_SELECTION_CONFIG, mergeSelectionConfig } from "./selection.ts";
 import { deriveEngagementScore } from "./utils.ts";
 import { InMemoryStore } from "./adapters/in_memory_store.ts";
@@ -61,13 +68,21 @@ export type CriticConfig =
   }
   | Critic;
 
+/** Declarative breeder configuration. Pass a string shorthand, an explicit config object, or a pre-built {@link Breeder} instance. */
+export type BreederConfigInput =
+  | "noop"
+  | { readonly provider: "noop" }
+  | Breeder;
+
 /** Complete declarative definition for creating a semantic loop. All fields except `store` are optional with sensible defaults. */
 export interface LoopDefinition {
   readonly store: StoreConfig;
   readonly embedding?: EmbeddingConfig;
   readonly critic?: CriticConfig;
+  readonly breeder?: BreederConfigInput;
   readonly selection?: Partial<SelectionConfig>;
   readonly aggregation?: Partial<AggregationConfig>;
+  readonly breeding?: Partial<BreederConfig>;
   readonly telemetry?: Telemetry;
 }
 
@@ -115,6 +130,19 @@ function isEmbeddingProvider(value: unknown): value is EmbeddingProvider {
 
 function isCritic(value: unknown): value is Critic {
   return typeof value === "object" && value !== null && "score" in value;
+}
+
+function isBreeder(value: unknown): value is Breeder {
+  return typeof value === "object" && value !== null && "breed" in value;
+}
+
+function resolveBreeder(config?: BreederConfigInput): Breeder {
+  if (!config || config === "noop") return new NoopBreeder();
+  if (isBreeder(config)) return config;
+  if (typeof config === "object" && "provider" in config && config.provider === "noop") {
+    return new NoopBreeder();
+  }
+  throw new ValidationError("Invalid breeder configuration.");
 }
 
 function resolveStore(config: StoreConfig): MemoryStore {
@@ -203,10 +231,12 @@ export function createLoop(definition: LoopDefinition): SemanticLoop {
   const store = resolveStore(definition.store);
   const embedder = resolveEmbedding(definition.embedding);
   const critic = resolveCritic(definition.critic);
+  const breeder = resolveBreeder(definition.breeder);
 
   const engine = new SemanticLoopEngine({
     store,
     critic,
+    breeder,
     telemetry: definition.telemetry,
     config: {
       selection: definition.selection
@@ -222,6 +252,20 @@ export function createLoop(definition: LoopDefinition): SemanticLoop {
             DEFAULT_AGGREGATION_CONFIG.decayFactor,
         }
         : DEFAULT_AGGREGATION_CONFIG,
+      breeding: definition.breeding
+        ? {
+          scoreThreshold: definition.breeding.scoreThreshold ??
+            DEFAULT_BREEDER_CONFIG.scoreThreshold,
+          minAttempts: definition.breeding.minAttempts ??
+            DEFAULT_BREEDER_CONFIG.minAttempts,
+          maxChildrenPerBreed: definition.breeding.maxChildrenPerBreed ??
+            DEFAULT_BREEDER_CONFIG.maxChildrenPerBreed,
+          maxGeneration: definition.breeding.maxGeneration ??
+            DEFAULT_BREEDER_CONFIG.maxGeneration,
+          cooldownHours: definition.breeding.cooldownHours ??
+            DEFAULT_BREEDER_CONFIG.cooldownHours,
+        }
+        : DEFAULT_BREEDER_CONFIG,
     },
   });
 
@@ -284,7 +328,7 @@ export function createLoop(definition: LoopDefinition): SemanticLoop {
       metrics: EngagementMetrics,
       opts?: IngestOptions,
     ): Promise<ProcessedOutcome> {
-      return engine.ingestOutcome({
+      const result = await engine.ingestOutcome({
         id: opts?.id ?? crypto.randomUUID(),
         itemId,
         platform,
@@ -294,6 +338,13 @@ export function createLoop(definition: LoopDefinition): SemanticLoop {
           deriveEngagementScore(metrics),
         payload: opts?.payload,
       });
+
+      // Embed and seed bred items into the store
+      if (result.bredInputs && result.bredInputs.length > 0) {
+        await this.seed(result.bredInputs);
+      }
+
+      return result;
     },
   };
 }

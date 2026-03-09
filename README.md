@@ -38,7 +38,7 @@ await loop.ingest(pick.candidate.item.id, "instagram", {
 
 ## What is this?
 
-A Deno-first library that turns any content — hooks, prompts, copy, templates — into a self-improving system. You seed items, the engine selects the best one for a given context, real-world outcomes flow back, and the system learns what works.
+A Deno-first library that turns any content — hooks, prompts, copy, templates — into a self-improving system. You seed items, the engine selects the best one for a given context, real-world outcomes flow back, and the system learns what works. When items perform well, an optional breeder generates variations — the pool grows from what works.
 
 ```
 seed → select → publish → observe → ingest → select again
@@ -174,13 +174,14 @@ Each is a single edge function backed by one Supabase project.
 
 ## Interfaces
 
-The core defines four contracts. Swap any part.
+The core defines five contracts. Swap any part.
 
 | Interface | What it does | Ships with |
 |-----------|-------------|------------|
 | **MemoryStore** | Where items and scores live | `InMemoryStore`, `SupabaseRpcStore` |
 | **Critic** | How content is judged after an outcome | `HeuristicCritic` |
 | **EmbeddingProvider** | Turns text into vectors | `OpenAIEmbedding`, `NoopEmbedding` |
+| **Breeder** | How the pool grows from winners | `NoopBreeder` |
 | **Telemetry** | Observe the loop itself | `NoopTelemetry` |
 
 ## The high-level API
@@ -255,6 +256,7 @@ mod.ts (barrel)
   ├── engine.ts             SemanticLoopEngine — the core
   ├── telemetry.ts          swappable observability
   ├── embedding.ts          EmbeddingProvider + OpenAI adapter
+  ├── breeder.ts            Breeder interface + NoopBreeder
   ├── config.ts             createLoop() factory
   ├── critics/
   │   └── heuristic_critic.ts

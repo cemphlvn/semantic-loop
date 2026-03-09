@@ -137,8 +137,10 @@ interface LoopDefinition {
   readonly store: StoreConfig;           // "supabase" | "memory" | { provider, ... } | MemoryStore
   readonly embedding?: EmbeddingConfig;  // "openai" | { provider, apiKey, ... } | EmbeddingProvider
   readonly critic?: CriticConfig;        // "heuristic" | { provider, ... } | Critic
+  readonly breeder?: BreederConfigInput; // "noop" | { provider: "noop" } | Breeder
   readonly selection?: Partial<SelectionConfig>;
   readonly aggregation?: Partial<AggregationConfig>;
+  readonly breeding?: Partial<BreederConfig>;
   readonly telemetry?: Telemetry;
 }
 
@@ -318,19 +320,42 @@ interface ProcessedOutcome {
   readonly critic: CriticResult;
   readonly aggregate: AggregateState;
   readonly finalScore: number;
+  readonly bredInputs?: readonly ItemInput[];  // Variations bred from this item, if any
+}
+
+// Breeding config (thresholds, limits, safety guards)
+interface BreederConfig {
+  readonly scoreThreshold: number;       // Default: 0.7
+  readonly minAttempts: number;           // Default: 1
+  readonly maxChildrenPerBreed: number;   // Default: 3
+  readonly maxGeneration: number;         // Default: 2
+  readonly cooldownHours: number;         // Default: 24
+}
+
+// Context provided to a Breeder when breeding is triggered
+interface BreedContext {
+  readonly item: SemanticItem;
+  readonly aggregate: AggregateState;
+  readonly critic: CriticResult;
+  readonly outcome: OutcomeSignal;
+  readonly finalScore: number;
+  readonly generation: number;
+  readonly config: BreederConfig;
 }
 
 // Engine config
 interface LoopConfig {
   readonly selection: SelectionConfig;
   readonly aggregation: AggregationConfig;
+  readonly breeding: BreederConfig;
 }
 
 interface EngineOptions {
   readonly store: MemoryStore;
   readonly critic: Critic;
+  readonly breeder?: Breeder;             // Default: NoopBreeder (no growth)
   readonly telemetry?: Telemetry;
-  readonly config?: Partial<LoopConfig>;
+  readonly config?: PartialLoopConfig;
   readonly random?: () => number;
   readonly now?: () => Date;
 }
@@ -341,6 +366,10 @@ interface EngineOptions {
 ```typescript
 interface Critic {
   score(input: CriticInput): Promise<CriticResult>;
+}
+
+interface Breeder {
+  breed(context: BreedContext): Promise<readonly ItemInput[]>;
 }
 
 interface MemoryStore {
@@ -474,6 +503,8 @@ class HeuristicCritic implements Critic {
   })
 }
 
+class NoopBreeder implements Breeder {}
+
 class NoopTelemetry implements Telemetry {}
 ```
 
@@ -508,6 +539,23 @@ finalScore = criticScore * 0.6 + engagementScore * 0.4
 attempts = old_attempts + 1
 scoreSum = old_scoreSum * decayFactor + finalScore
 scoreAvg = scoreSum / attempts
+```
+
+### Breeding (Pool Growth)
+
+```
+After ingestOutcome(), if all guards pass, the breeder generates variations:
+  1. finalScore >= scoreThreshold (default 0.7)
+  2. aggregate.attempts >= minAttempts (default 1)
+  3. item.metadata.generation < maxGeneration (default 2)
+  4. hours since item.metadata.lastBredAt >= cooldownHours (default 24)
+
+Bred items inherit parent's tribe/kind and carry lineage metadata:
+  { parentId, generation: parent.generation + 1, bredAt }
+
+Output is truncated to maxChildrenPerBreed (default 3).
+New items enter the pool with zero history — the exploration weight
+(1/(attempts+1)) naturally gives them a chance.
 ```
 
 ### Cosine Similarity

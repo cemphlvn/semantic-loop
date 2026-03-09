@@ -141,19 +141,53 @@ export interface AggregateUpdate {
   readonly occurredAt: string;
 }
 
-/** Full result of ingesting an outcome: the item, outcome, critic result, and updated aggregate. */
+/** Full result of ingesting an outcome: the item, outcome, critic result, updated aggregate, and any bred variations. */
 export interface ProcessedOutcome {
   readonly item: SemanticItem;
   readonly outcome: OutcomeSignal;
   readonly critic: CriticResult;
   readonly aggregate: AggregateState;
   readonly finalScore: number;
+  readonly bredInputs?: readonly ItemInput[];
 }
 
-/** Combined selection and aggregation configuration for the loop. */
+/** Configuration for the breeding subsystem: thresholds, limits, and safety guards. */
+export interface BreederConfig {
+  readonly scoreThreshold: number;
+  readonly minAttempts: number;
+  readonly maxChildrenPerBreed: number;
+  readonly maxGeneration: number;
+  readonly cooldownHours: number;
+}
+
+/** Context provided to a Breeder when an item crosses the breeding threshold. */
+export interface BreedContext {
+  readonly item: SemanticItem;
+  readonly aggregate: AggregateState;
+  readonly critic: CriticResult;
+  readonly outcome: OutcomeSignal;
+  readonly finalScore: number;
+  readonly generation: number;
+  readonly config: BreederConfig;
+}
+
+/** Strategy for growing the item pool. Called when high-performing items cross a score threshold. */
+export interface Breeder {
+  breed(context: BreedContext): Promise<readonly ItemInput[]>;
+}
+
+/** Combined selection, aggregation, and breeding configuration for the loop. */
 export interface LoopConfig {
   readonly selection: SelectionConfig;
   readonly aggregation: AggregationConfig;
+  readonly breeding: BreederConfig;
+}
+
+/** Deep-partial version of LoopConfig for use in EngineOptions. */
+export interface PartialLoopConfig {
+  readonly selection?: Partial<SelectionConfig>;
+  readonly aggregation?: Partial<AggregationConfig>;
+  readonly breeding?: Partial<BreederConfig>;
 }
 
 /** Scores an item after an outcome is observed. Plugin boundary for evaluation logic. */
@@ -186,8 +220,9 @@ export interface Telemetry {
 export interface EngineOptions {
   readonly store: MemoryStore;
   readonly critic: Critic;
+  readonly breeder?: Breeder;
   readonly telemetry?: Telemetry;
-  readonly config?: Partial<LoopConfig>;
+  readonly config?: PartialLoopConfig;
   readonly random?: () => number;
   readonly now?: () => Date;
 }

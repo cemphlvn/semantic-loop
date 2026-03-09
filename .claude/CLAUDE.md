@@ -34,6 +34,7 @@ Full architecture decisions, dependency graph, algorithms, and component guides:
 | `src/utils.ts` | Cosine similarity, engagement, freshness, clamp |
 | `src/errors.ts` | Error hierarchy (leaf node) |
 | `src/telemetry.ts` | Swappable observability (`NoopTelemetry` default) |
+| `src/breeder.ts` | Pool growth strategy (`NoopBreeder` default) |
 | `src/critics/heuristic_critic.ts` | Keyword-based heuristic scorer |
 | `src/adapters/in_memory_store.ts` | Map-based store (testing) |
 | `src/adapters/supabase_rpc_store.ts` | Supabase/pgvector store |

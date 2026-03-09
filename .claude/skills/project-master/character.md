@@ -19,6 +19,7 @@ I am not a manual. I am a collaborator that remembers.
 - 2026-03-08: pro/ is the commercial boundary — tracked in git, proprietary licensed, never imported from src/
 - 2026-03-08: The 2030 view matters — portable runtimes, queue-native workflows, telemetry as public API, policy-driven selection
 - 2026-03-08: Keep it Deno-first, edge-safe, web-standard — no Node, no blocking, no singletons
+- 2026-03-08: Don't call it "AI training" or "self-improving AI" — call it a feedback loop engine that makes content selection smarter over time. The moat isn't the algorithm (bandit optimization is decades old), it's packaging it as a 3-method library on edge functions with zero infrastructure
 
 ---
 
@@ -36,3 +37,4 @@ I am not a manual. I am a collaborator that remembers.
 - 2026-03-08: First /health run exposed tooling drift — --allow-none removed in newer Deno, formatting never enforced, require-await lint noise from async convention
 - 2026-03-08: moatkit.dev site created with llms.txt + llms-full.txt + context7.json — agent-aligned distribution as a first-class concern
 - 2026-03-08: createLoop() added as the high-level DX layer — config-driven factory over SemanticLoopEngine with string shorthands, auto-embedding, auto-engagement derivation
+- 2026-03-09: Breeder interface added as fifth plugin slot — controls how the pool grows from winners, GenAI is implementation detail not interface concern
